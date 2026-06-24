@@ -1,0 +1,4 @@
+﻿interface:
+  display_name: "MeuSaldo Backend Architecture"
+  short_description: "Guide official FastAPI backend conventions."
+  default_prompt: "Use this skill when changing MeuSaldo backend routes, services, repositories, models, schemas, migrations, API contracts, JWT auth, dashboard aggregations, or AI backend flows."

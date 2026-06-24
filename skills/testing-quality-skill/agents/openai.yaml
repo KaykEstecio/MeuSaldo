@@ -1,0 +1,4 @@
+﻿interface:
+  display_name: "MeuSaldo Testing Quality"
+  short_description: "Guide official tests and quality gates."
+  default_prompt: "Use this skill when adding or reviewing MeuSaldo pytest tests, FastAPI integration tests, Alembic checks, React tests, API contract tests, Recharts checks, auth isolation tests, or AI fallback quality gates."

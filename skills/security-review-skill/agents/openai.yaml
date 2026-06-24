@@ -1,0 +1,4 @@
+﻿interface:
+  display_name: "MeuSaldo Security Review"
+  short_description: "Review JWT, privacy, secrets, and data isolation."
+  default_prompt: "Use this skill before merging MeuSaldo auth, JWT, user isolation, financial data access, error handling, env secrets, frontend storage, logging, CORS, migrations, or AI privacy changes."

@@ -1,0 +1,4 @@
+﻿interface:
+  display_name: "MeuSaldo Frontend UI"
+  short_description: "Guide official React financial UI conventions."
+  default_prompt: "Use this skill when building or reviewing MeuSaldo React TypeScript screens, API clients, feature folders, TailwindCSS layouts, Recharts dashboards, auth UI, or AI assistant UI."
