@@ -22,8 +22,31 @@ meu-saldo/
   frontend/
   docs/
     planejamento.md
+  docker-compose.yml
   .gitignore
   README.md
+```
+
+## PostgreSQL Com Docker
+
+Suba o banco local:
+
+```bash
+docker compose up -d postgres
+```
+
+Banco criado pelo compose:
+
+- Host: `localhost`
+- Porta: `5432`
+- Database: `meusaldodb`
+- Usuario: `postgres`
+- Senha: `postgres`
+
+URL usada pelo backend:
+
+```env
+DATABASE_URL=postgresql+psycopg://postgres:postgres@localhost:5432/meusaldodb
 ```
 
 ## Status
@@ -31,4 +54,3 @@ meu-saldo/
 Etapa 1 concluida: estrutura inicial do repositorio.
 
 Backend, frontend e banco ainda nao foram implementados.
-

@@ -152,7 +152,8 @@ Resposta de erro:
 
 ## Status Da Etapa Atual
 
-Etapa 1: criar estrutura inicial do repositorio.
+Fase 4: models base e migration inicial.
 
-Nesta etapa nao devem ser implementados backend, frontend, banco, migrations ou funcionalidades.
+Ja foram configurados backend FastAPI, PostgreSQL via Docker, SQLAlchemy, Alembic e os models base `users`, `accounts`, `categories` e `transactions`.
 
+Ainda nao devem existir autenticacao JWT, CRUD financeiro, frontend, dashboard, orcamentos ou IA.

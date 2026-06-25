@@ -1,5 +1,11 @@
 from fastapi import APIRouter
+from fastapi import Depends
+from fastapi.responses import JSONResponse
+from sqlalchemy import text
+from sqlalchemy.exc import SQLAlchemyError
+from sqlalchemy.orm import Session
 
+from app.database.connection import get_db
 from app.schemas.health import HealthResponse
 
 
@@ -12,4 +18,27 @@ def health_check() -> HealthResponse:
         success=True,
         message="API MeuSaldo online",
         data={"status": "healthy"},
+    )
+
+
+@router.get("/health/db", response_model=HealthResponse)
+def database_health_check(db: Session = Depends(get_db)) -> HealthResponse | JSONResponse:
+    try:
+        db.execute(text("SELECT 1"))
+    except SQLAlchemyError:
+        return JSONResponse(
+            status_code=503,
+            content={
+                "error": {
+                    "code": "DATABASE_UNAVAILABLE",
+                    "message": "Banco de dados indisponível",
+                    "details": {},
+                }
+            },
+        )
+
+    return HealthResponse(
+        success=True,
+        message="Conexão com banco de dados ativa",
+        data={"database": "connected"},
     )
