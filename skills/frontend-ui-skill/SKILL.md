@@ -1,4 +1,4 @@
-﻿---
+---
 name: frontend-ui-skill
 description: Frontend UI guidance for MeuSaldo. Use when building or reviewing the official React TypeScript frontend structure, src/api clients, feature folders, TailwindCSS layouts, Recharts dashboard views, auth screens, API response/error handling, .env config, financial forms, or AI assistant UI.
 ---
@@ -59,6 +59,19 @@ frontend/
   .env.example
 ```
 
+## Estrutura Oficial De Docs
+
+Quando uma mudanca frontend exigir documentacao, atualize os documentos corretos em:
+
+```txt
+docs/architecture/frontend-architecture.md
+docs/architecture/api-contract.md
+docs/quality/definition-of-done.md
+docs/quality/testing-strategy.md
+```
+
+Decisoes estruturais de frontend devem virar ADR em `docs/decisions/`.
+
 ## Convenções Permanentes
 
 - Use componentes React em `PascalCase.tsx`, hooks com prefixo `use`, utilitários em arquivos descritivos e pastas de feature em kebab-case quando compostas, como `ai-assistant`.
@@ -109,6 +122,20 @@ Nunca exponha no frontend `JWT_SECRET_KEY`, `DATABASE_URL`, `AI_API_KEY` ou qual
 - Tabelas financeiras devem ser legíveis em mobile; use empilhamento, resumo ou paginação em vez de overflow horizontal pesado.
 - Ações destrutivas, como remover conta, categoria, transação ou orçamento, precisam de confirmação visual clara.
 
+## Ordem Oficial De Implementacao
+
+No frontend, respeite esta sequencia:
+
+1. Setup frontend com rotas, layout e API client.
+2. Telas de auth.
+3. Dashboard frontend.
+4. Telas de contas, categorias e transacoes.
+5. Tela de orcamentos.
+6. Interface do assistente IA com fallback por regras.
+7. Refinamento responsivo, testes e documentacao.
+
+Nao antecipe telas fora do MVP antes de fechar os fluxos financeiros principais.
+
 ## Comandos Oficiais
 
 Frontend:
@@ -142,6 +169,10 @@ npm run test:e2e
 - Financeiro: telas de contas, categorias, transações e orçamentos validam formulário e exibem erros do envelope oficial.
 - IA: tela usa `api/aiAssistant.ts`, mostra fallback quando aplicável e não expõe dados sensíveis desnecessários.
 - MVP frontend: `npm run typecheck`, `npm run lint`, `npm run test` e `npm run build` devem passar ou a falha deve estar registrada.
+
+## Fora Do MVP
+
+Nao implemente no frontend do MVP: app mobile nativo, offline sync, relatorios PDF, importacao de extrato, OCR de comprovantes, notificacoes push/email, contas compartilhadas, assinaturas pagas, recorrencia avancada, parcelamento, metas complexas, Open Finance ou IA executando acoes financeiras.
 
 ## Checklist De Validação
 

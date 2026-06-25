@@ -1,4 +1,4 @@
-﻿---
+---
 name: testing-quality-skill
 description: Testing and quality guidance for MeuSaldo. Use when adding or reviewing pytest tests, FastAPI integration tests, SQLAlchemy/PostgreSQL fixtures, Alembic migration checks, React TypeScript tests, API contract tests, Recharts rendering checks, JWT/user-isolation tests, CI commands, or AI assistant fallback and privacy quality gates.
 ---
@@ -29,6 +29,16 @@ frontend/src/tests/
 ```
 
 Padrões de nome: arquivos backend começam com `test_`; testes devem refletir domínio e comportamento, como `test_transactions_service.py`, `test_auth_routes.py`, `test_dashboard_service.py`. No frontend, agrupe por feature ou componente e teste comportamento observável do usuário.
+
+## Estrutura Oficial De Docs
+
+Quando testes, qualidade ou criterios de pronto mudarem, mantenha estes documentos como referencia futura:
+
+```txt
+docs/quality/testing-strategy.md
+docs/quality/definition-of-done.md
+docs/planning/implementation-roadmap.md
+```
 
 ## Comandos Oficiais
 
@@ -124,6 +134,26 @@ IA:
 - Contexto enviado à IA exclui tokens, secrets, email quando desnecessário e dados de outro usuário.
 - Falha de IA retorna fallback ou erro oficial controlado.
 
+## Ordem Oficial De Implementacao E Testes
+
+Adicione ou revise testes acompanhando esta ordem:
+
+1. Setup backend, configuracao, conexao PostgreSQL e Alembic.
+2. Models base: `users`, `accounts`, `categories`, `transactions`.
+3. Autenticacao JWT: register, login e usuario atual.
+4. CRUD de contas.
+5. CRUD de categorias.
+6. CRUD de transacoes com atualizacao de saldo.
+7. Dashboard com resumo, fluxo mensal e gastos por categoria.
+8. Orcamentos mensais.
+9. Setup frontend com rotas, layout e API client.
+10. Telas de auth.
+11. Dashboard frontend.
+12. Telas de contas, categorias e transacoes.
+13. Tela de orcamentos.
+14. Assistente IA com fallback por regras.
+15. Testes, refinamento, seguranca e documentacao.
+
 ## Contratos Que Devem Ser Testados
 
 Sucesso único:
@@ -156,6 +186,8 @@ Erro:
 - Componentes tratam loading, empty e error?
 - Testes de IA usam mock/fallback e não provedor externo real?
 - A impossibilidade de executar algum comando foi registrada claramente?
+- A cobertura acompanha a fase atual da ordem oficial?
+- O teste nao assume funcionalidade fora do MVP?
 
 ## Critérios De Pronto
 
@@ -165,6 +197,10 @@ Erro:
 - Dashboard pronto: agregações backend e contratos para Recharts estão testados.
 - Frontend pronto: fluxo de login, dashboard responsivo, formulários e comandos de qualidade passam.
 - IA pronta para MVP: fallback por regras, contexto minimizado e testes de privacidade passam.
+
+## Fora Do MVP
+
+Nao exija nem crie testes para funcionalidades fora do MVP salvo se uma decisao explicita antecipar o escopo: Open Finance, importacao automatica de extratos, OCR, contas compartilhadas, assinaturas pagas, notificacoes push/email, recorrencia avancada, parcelamento, metas complexas, relatorios PDF, app mobile nativo, offline sync, IA executando acoes financeiras, recomendacoes de investimento personalizadas ou integracao contabil/fiscal.
 
 ## Boas Práticas
 

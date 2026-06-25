@@ -1,4 +1,4 @@
-﻿---
+---
 name: security-review-skill
 description: Security review guidance for MeuSaldo. Use when reviewing JWT authentication, app/api/deps.py authorization, user isolation in repositories/services, API error contracts, env secrets, frontend storage, PostgreSQL financial data access, logging, CORS, Alembic changes, or AI assistant privacy and fallback flows.
 ---
@@ -21,6 +21,7 @@ Use esta skill antes de aprovar mudanças em `backend/app/core/security.py`, `ba
 - Env backend: `DATABASE_URL`, `JWT_SECRET_KEY`, `JWT_ALGORITHM`, expirações JWT, `CORS_ORIGINS`, `AI_PROVIDER`, `AI_API_KEY`, `AI_MODEL`, `AI_TIMEOUT_SECONDS`.
 - Env frontend: somente `VITE_APP_NAME` e `VITE_API_BASE_URL`; secrets nunca usam prefixo `VITE_`.
 - IA: `app/services/ai_assistant_service.py` com provider externo isolado e fallback por regras.
+- Docs de seguran?a: `docs/architecture/security-model.md`, `docs/decisions/adr-002-authentication.md` e `docs/decisions/adr-003-ai-data-privacy.md`.
 
 ## Regras Permanentes
 
@@ -71,6 +72,20 @@ Use `INVALID_CREDENTIALS` para login inválido sem informar se email ou senha fa
 - Trate prompt do usuário como entrada não confiável; ele não pode pedir secrets, bypass de autorização ou dados brutos fora do escopo.
 - Se o provedor externo falhar, retorne resposta controlada com `AI_SERVICE_UNAVAILABLE` ou fallback por regras, conforme o caso.
 
+## Ordem Oficial De Revisao
+
+Revise seguranca nesta ordem conforme o projeto evoluir:
+
+1. Setup backend, configuracao, PostgreSQL e Alembic sem secrets reais.
+2. Autenticacao JWT, hash de senha e `/users/me`.
+3. Isolamento por usuario em contas, categorias e transacoes.
+4. Atualizacao de saldo e regras financeiras sensiveis.
+5. Dashboard agregado sem vazamento entre usuarios.
+6. Orcamentos mensais por categoria do mesmo usuario.
+7. Frontend auth, API client e armazenamento de token.
+8. Assistente IA com fallback por regras e contexto minimizado.
+9. Testes, logs, documentacao e criterios de pronto.
+
 ## Comandos Relevantes Para Revisão
 
 Backend:
@@ -108,6 +123,10 @@ alembic upgrade head
 - Dashboard: agregações filtram por usuário e período.
 - IA: contexto minimizado, fallback por regras e ausência de secrets em logs.
 - MVP: `.env.example` atualizado, nenhuma chave sensível no repo e erros seguindo contrato oficial.
+
+## Fora Do MVP Por Seguranca
+
+Bloqueie ou questione no MVP: Open Finance, importacao automatica de extratos, OCR de comprovantes, contas compartilhadas, assinaturas pagas, notificacoes externas, app mobile nativo, offline sync, IA executando acoes financeiras, recomendacoes de investimento personalizadas e integracoes contabeis/fiscais.
 
 ## Boas Práticas
 

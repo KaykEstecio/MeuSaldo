@@ -1,4 +1,4 @@
-﻿---
+---
 name: backend-architecture-skill
 description: Backend architecture guidance for MeuSaldo. Use when changing or reviewing the official FastAPI backend structure, app/api/v1 routes, services, repositories, SQLAlchemy models, Pydantic schemas, PostgreSQL entities, Alembic migrations, JWT auth, API response/error contracts, env config, dashboard aggregations, or AI assistant backend flows.
 ---
@@ -69,7 +69,27 @@ backend/
   pyproject.toml
   .env.example
 ```
+## Estrutura Oficial De Docs
 
+Quando houver documentação do projeto, use esta estrutura:
+
+```txt
+docs/
+  planning/technical-plan.md
+  planning/implementation-roadmap.md
+  architecture/backend-architecture.md
+  architecture/frontend-architecture.md
+  architecture/database-model.md
+  architecture/api-contract.md
+  architecture/security-model.md
+  decisions/adr-001-stack.md
+  decisions/adr-002-authentication.md
+  decisions/adr-003-ai-data-privacy.md
+  quality/testing-strategy.md
+  quality/definition-of-done.md
+```
+
+Não crie documentação paralela fora de `docs/` quando o assunto pertencer ao contrato técnico, arquitetura, decisões ou qualidade.
 ## Convenções Permanentes
 
 - Escreva arquivos Python em `snake_case.py`; models no singular; services com `_service.py`; repositories com `_repository.py`; testes com `test_`.
@@ -174,6 +194,25 @@ Campos mínimos: `users` com `name`, `email`, `password_hash`; `accounts` com `t
 - Exclusões não devem causar perda acidental de histórico financeiro.
 - A IA deve receber dados mínimos e preferencialmente agregados; nunca envie tokens, senhas, chaves, logs brutos ou dados de outro usuário.
 
+## Ordem Oficial De Implementação
+
+Siga esta ordem quando implementar o sistema:
+
+1. Setup backend, configuração, conexão PostgreSQL e Alembic.
+2. Models base: `users`, `accounts`, `categories`, `transactions`.
+3. Autenticação JWT: register, login e usuário atual.
+4. CRUD de contas.
+5. CRUD de categorias.
+6. CRUD de transações com atualização de saldo.
+7. Dashboard com resumo, fluxo mensal e gastos por categoria.
+8. Orçamentos mensais.
+9. Setup frontend com rotas, layout e API client.
+10. Telas de auth.
+11. Dashboard frontend.
+12. Telas de contas, categorias e transações.
+13. Tela de orçamentos.
+14. Assistente IA com fallback por regras.
+15. Testes, refinamento, segurança e documentação.
 ## Comandos Oficiais
 
 Backend:
@@ -213,6 +252,11 @@ pytest app/tests/integration
 - Financeiro: CRUD de contas, categorias e transações filtra por usuário, atualiza saldo e testa dois usuários.
 - Dashboard: agregações ficam no backend, aceitam filtros e retornam formato pronto para gráficos.
 - IA: provider externo fica isolado, fallback por regras funciona e contexto é minimizado.
+- MVP: backend, frontend, migrations, `.env.example`, testes principais e skills devem estar alinhados ao contrato oficial.
+
+## Fora Do MVP
+
+Não implemente no MVP: Open Finance, importação automática de extratos, OCR de comprovantes, contas compartilhadas, assinaturas pagas, notificações push/email, recorrência avançada, parcelamento, metas complexas, relatórios PDF, app mobile nativo, offline sync, IA executando ações financeiras, recomendações de investimento personalizadas ou integração contábil/fiscal.
 
 ## Checklist De Validação
 
@@ -232,3 +276,4 @@ pytest app/tests/integration
 - Aceitar `user_id` vindo do cliente para definir propriedade.
 - Fazer dashboard calcular agregações pesadas no frontend.
 - Criar provider de IA acoplado diretamente às rotas.
+
