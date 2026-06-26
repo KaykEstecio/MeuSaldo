@@ -11,13 +11,20 @@ from app.models.user import User
 from app.repositories.user_repository import get_user_by_id
 
 
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/v1/auth/login")
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/v1/auth/login", auto_error=False)
 
 
 def get_current_user(
-    token: str = Depends(oauth2_scheme),
+    token: str | None = Depends(oauth2_scheme),
     db: Session = Depends(get_db),
 ) -> User:
+    if token is None:
+        raise AppError(
+            status_code=401,
+            code="AUTHENTICATION_REQUIRED",
+            message="Token de autenticacao ausente",
+        )
+
     payload = decode_access_token(token)
     subject = payload.get("sub")
 

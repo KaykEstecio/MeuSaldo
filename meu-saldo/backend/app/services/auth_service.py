@@ -1,5 +1,6 @@
 from sqlalchemy.orm import Session
 
+from app.core.config import settings
 from app.core.exceptions import AppError
 from app.core.security import create_access_token, get_password_hash, verify_password
 from app.models.user import User
@@ -51,5 +52,5 @@ def authenticate_user(db: Session, payload: LoginRequest) -> TokenResponse:
     return TokenResponse(
         access_token=access_token,
         token_type="bearer",
-        expires_in_minutes=30,
+        expires_in_minutes=settings.jwt_access_token_expire_minutes,
     )

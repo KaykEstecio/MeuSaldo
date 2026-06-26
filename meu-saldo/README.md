@@ -4,7 +4,7 @@ MeuSaldo e um sistema web de controle financeiro pessoal com assistente de IA.
 
 ## Stack Definida
 
-- Backend: Python com FastAPI
+- Backend: Python 3.12 com FastAPI
 - Banco: PostgreSQL
 - ORM: SQLAlchemy
 - Migrations: Alembic
@@ -51,6 +51,8 @@ DATABASE_URL=postgresql+psycopg://postgres:postgres@localhost:5432/meusaldodb
 
 ## Status
 
-Etapa 1 concluida: estrutura inicial do repositorio.
+Fase atual concluida: CRUD de contas no backend.
 
-Backend, frontend e banco ainda nao foram implementados.
+Ja existem base FastAPI, PostgreSQL via Docker, SQLAlchemy, Alembic, models base, rotas de autenticacao e CRUD de contas com isolamento por usuario.
+
+Ainda nao foram implementados CRUD de categorias, transacoes, frontend, dashboard, orcamentos ou IA.
