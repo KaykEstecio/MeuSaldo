@@ -51,8 +51,8 @@ DATABASE_URL=postgresql+psycopg://postgres:postgres@localhost:5432/meusaldodb
 
 ## Status
 
-Fase atual concluida: CRUD de contas no backend.
+Fase atual concluida: CRUD de transacoes com atualizacao de saldo no backend.
 
-Ja existem base FastAPI, PostgreSQL via Docker, SQLAlchemy, Alembic, models base, rotas de autenticacao e CRUD de contas com isolamento por usuario.
+Ja existem base FastAPI, PostgreSQL via Docker, SQLAlchemy, Alembic, models base, rotas de autenticacao, CRUD de contas, CRUD de categorias e CRUD de transacoes com isolamento por usuario.
 
-Ainda nao foram implementados CRUD de categorias, transacoes, frontend, dashboard, orcamentos ou IA.
+Ainda nao foram implementados dashboard, orcamentos, frontend ou IA.

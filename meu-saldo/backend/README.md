@@ -2,9 +2,9 @@
 
 Backend inicial do MeuSaldo usando Python 3.12, FastAPI, PostgreSQL, SQLAlchemy e Alembic.
 
-## Escopo Da Fase 6
+## Escopo Da Fase 9
 
-Esta fase configura a base da API, autenticacao inicial e CRUD de contas:
+Esta fase configura a base da API, autenticacao inicial, CRUD de contas, CRUD de categorias e CRUD de transacoes:
 
 - Aplicacao FastAPI
 - CORS
@@ -20,10 +20,21 @@ Esta fase configura a base da API, autenticacao inicial e CRUD de contas:
 - CRUD de contas em `/api/v1/accounts`
 - Isolamento de contas por usuario autenticado
 - Remocao logica de contas com `is_active=false`
-- Testes de integracao da autenticacao e contas
+- CRUD de categorias em `/api/v1/categories`
+- Isolamento de categorias por usuario autenticado
+- Remocao logica de categorias com `is_active=false`
+- CRUD de transacoes em `/api/v1/transactions`
+- Isolamento de transacoes por usuario autenticado
+- Validacao de conta e categoria do mesmo usuario
+- Atualizacao automatica do saldo da conta
+- Remocao logica de transacoes com `is_active=false`
+- Bloqueio da linha da conta ao recalcular saldo em criacao, edicao e remocao de transacoes
+- Dashboard backend em `/api/v1/dashboard/summary`
+- Agregacoes financeiras por usuario para saldo, receitas, despesas, categorias e fluxo diario
+- Testes de integracao da autenticacao, contas, categorias, transacoes e dashboard
 - Estrutura inicial de pastas
 
-CRUD de categorias, transacoes, dashboard, orcamentos, frontend e IA ainda nao foram implementados.
+Orcamentos, frontend e IA ainda nao foram implementados.
 
 ## Como Rodar Localmente
 
@@ -147,7 +158,7 @@ Criar nova migration futuramente:
 alembic revision --autogenerate -m "mensagem"
 ```
 
-Nesta fase existe apenas a migration inicial dos models base. Novas alteracoes de schema devem gerar novas migrations.
+As migrations atuais cobrem os models base e o soft delete de transacoes. Novas alteracoes de schema devem gerar novas migrations.
 
 ## Autenticacao
 
@@ -214,6 +225,101 @@ Remover conta:
 curl -X DELETE http://localhost:8000/api/v1/accounts/ACCOUNT_ID ^
   -H "Authorization: Bearer SEU_TOKEN"
 ```
+
+## Categorias
+
+Criar categoria:
+
+```bash
+curl -X POST http://localhost:8000/api/v1/categories ^
+  -H "Authorization: Bearer SEU_TOKEN" ^
+  -H "Content-Type: application/json" ^
+  -d "{\"name\":\"Mercado\",\"type\":\"expense\",\"color\":\"#22c55e\",\"icon\":\"shopping-cart\"}"
+```
+
+Listar categorias:
+
+```bash
+curl http://localhost:8000/api/v1/categories ^
+  -H "Authorization: Bearer SEU_TOKEN"
+```
+
+Consultar categoria:
+
+```bash
+curl http://localhost:8000/api/v1/categories/CATEGORY_ID ^
+  -H "Authorization: Bearer SEU_TOKEN"
+```
+
+Atualizar categoria:
+
+```bash
+curl -X PATCH http://localhost:8000/api/v1/categories/CATEGORY_ID ^
+  -H "Authorization: Bearer SEU_TOKEN" ^
+  -H "Content-Type: application/json" ^
+  -d "{\"name\":\"Supermercado\"}"
+```
+
+Remover categoria:
+
+```bash
+curl -X DELETE http://localhost:8000/api/v1/categories/CATEGORY_ID ^
+  -H "Authorization: Bearer SEU_TOKEN"
+```
+
+## Transacoes
+
+Criar transacao:
+
+```bash
+curl -X POST http://localhost:8000/api/v1/transactions ^
+  -H "Authorization: Bearer SEU_TOKEN" ^
+  -H "Content-Type: application/json" ^
+  -d "{\"account_id\":\"ACCOUNT_ID\",\"category_id\":\"CATEGORY_ID\",\"type\":\"expense\",\"amount\":\"50.00\",\"description\":\"Mercado\",\"transaction_date\":\"2026-06-26\"}"
+```
+
+Listar transacoes:
+
+```bash
+curl http://localhost:8000/api/v1/transactions ^
+  -H "Authorization: Bearer SEU_TOKEN"
+```
+
+Consultar transacao:
+
+```bash
+curl http://localhost:8000/api/v1/transactions/TRANSACTION_ID ^
+  -H "Authorization: Bearer SEU_TOKEN"
+```
+
+Atualizar transacao:
+
+```bash
+curl -X PATCH http://localhost:8000/api/v1/transactions/TRANSACTION_ID ^
+  -H "Authorization: Bearer SEU_TOKEN" ^
+  -H "Content-Type: application/json" ^
+  -d "{\"amount\":\"75.00\"}"
+```
+
+Remover transacao:
+
+```bash
+curl -X DELETE http://localhost:8000/api/v1/transactions/TRANSACTION_ID ^
+  -H "Authorization: Bearer SEU_TOKEN"
+```
+
+A remocao de transacoes e logica: a linha permanece no banco com `is_active=false` e `deleted_at` preenchido, mas nao aparece em consultas comuns.
+
+## Dashboard
+
+Consultar resumo financeiro do mes:
+
+```bash
+curl "http://localhost:8000/api/v1/dashboard/summary?year=2026&month=6" ^
+  -H "Authorization: Bearer SEU_TOKEN"
+```
+
+A resposta inclui saldo total atual, receitas do mes, despesas do mes, saldo liquido do mes, total de contas ativas, total de transacoes do periodo, despesas por categoria e fluxo diario para graficos.
 
 ## Testes
 
