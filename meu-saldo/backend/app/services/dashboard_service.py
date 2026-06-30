@@ -1,5 +1,6 @@
 from calendar import monthrange
 from datetime import UTC, date, datetime
+from decimal import Decimal
 
 from sqlalchemy.orm import Session
 
@@ -18,6 +19,13 @@ from app.schemas.dashboard import (
     DashboardPeriod,
     DashboardSummary,
 )
+
+
+MONEY_SCALE = Decimal("0.01")
+
+
+def format_money(value: Decimal) -> Decimal:
+    return value.quantize(MONEY_SCALE)
 
 
 def build_period(year: int | None, month: int | None) -> DashboardPeriod:
@@ -62,7 +70,7 @@ def get_dashboard_summary(
     )
 
     expense_by_category = [
-        DashboardCategoryExpense(category_id=category_id, category_name=name, amount=amount)
+        DashboardCategoryExpense(category_id=category_id, category_name=name, amount=format_money(amount))
         for category_id, name, amount in list_expenses_by_category(
             db,
             current_user.id,
@@ -71,7 +79,12 @@ def get_dashboard_summary(
         )
     ]
     cashflow_by_day = [
-        DashboardCashflowPoint(date=day, income=income, expense=expense, net=income - expense)
+        DashboardCashflowPoint(
+            date=day,
+            income=format_money(income),
+            expense=format_money(expense),
+            net=format_money(income - expense),
+        )
         for day, income, expense in list_cashflow_by_day(
             db,
             current_user.id,
@@ -82,10 +95,10 @@ def get_dashboard_summary(
 
     return DashboardSummary(
         period=period,
-        total_balance=get_total_balance(db, current_user.id),
-        monthly_income=monthly_income,
-        monthly_expense=monthly_expense,
-        monthly_net=monthly_income - monthly_expense,
+        total_balance=format_money(get_total_balance(db, current_user.id)),
+        monthly_income=format_money(monthly_income),
+        monthly_expense=format_money(monthly_expense),
+        monthly_net=format_money(monthly_income - monthly_expense),
         active_accounts=count_active_accounts(db, current_user.id),
         transactions_count=transactions_count,
         expense_by_category=expense_by_category,

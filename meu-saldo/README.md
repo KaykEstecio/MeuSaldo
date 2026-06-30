@@ -27,6 +27,20 @@ meu-saldo/
   README.md
 ```
 
+## Comandos Do Frontend
+
+```bash
+cd frontend
+npm install
+npm run dev
+```
+
+URL local:
+
+```txt
+http://localhost:5173
+```
+
 ## PostgreSQL Com Docker
 
 Suba o banco local:
@@ -51,8 +65,8 @@ DATABASE_URL=postgresql+psycopg://postgres:postgres@localhost:5432/meusaldodb
 
 ## Status
 
-Fase atual concluida: CRUD de transacoes com atualizacao de saldo no backend.
+Fase atual concluida: setup frontend.
 
-Ja existem base FastAPI, PostgreSQL via Docker, SQLAlchemy, Alembic, models base, rotas de autenticacao, CRUD de contas, CRUD de categorias e CRUD de transacoes com isolamento por usuario.
+Ja existem backend FastAPI completo ate orcamentos mensais, PostgreSQL via Docker, SQLAlchemy, Alembic, autenticacao JWT, CRUDs financeiros, dashboard backend e base frontend com React, TypeScript, Vite, TailwindCSS e Recharts.
 
-Ainda nao foram implementados dashboard, orcamentos, frontend ou IA.
+Ainda nao foram implementadas as telas reais do frontend nem IA.

@@ -282,7 +282,7 @@ Regras implementadas:
 
 ### budgets
 
-Campos planejados:
+Campos implementados:
 
 - `id`
 - `user_id`
@@ -290,14 +290,19 @@ Campos planejados:
 - `month`
 - `year`
 - `limit_amount`
+- `is_active`
 - `created_at`
 - `updated_at`
 
-Regras futuras:
+Regras implementadas:
 
 - Orcamento pertence a um usuario.
 - Orcamento deve ser vinculado a categoria de despesa.
 - Orcamento deve ser por mes, ano e categoria.
+- Usuario so acessa seus proprios orcamentos.
+- Nao pode existir mais de um orcamento ativo para a mesma categoria no mesmo mes e ano.
+- Exclusao usa soft delete com `is_active=false`.
+- A API retorna gasto realizado, valor restante, percentual de uso e indicador de limite ultrapassado.
 
 ### ai_messages
 
@@ -358,8 +363,8 @@ Regras:
 9. CRUD de transacoes com atualizacao de saldo.
 10. Testes basicos do backend financeiro.
 11. Dashboard backend. Concluido.
-12. Orcamentos mensais.
-13. Setup frontend.
+12. Orcamentos mensais. Concluido.
+13. Setup frontend. Concluido.
 14. Telas de autenticacao.
 15. Dashboard frontend.
 16. Telas de contas, categorias e transacoes.
@@ -372,7 +377,7 @@ Regras:
 Status atual:
 
 ```txt
-Fase 11 - Dashboard backend concluido
+Fase 13 - Setup frontend concluido
 ```
 
 Ja foram implementados:
@@ -392,14 +397,22 @@ Ja foram implementados:
 - Remocao logica de transacoes.
 - Bloqueio de conta durante recalculo de saldo em transacoes.
 - Dashboard backend com resumo financeiro agregado por usuario.
+- CRUD de orcamentos mensais com isolamento por usuario.
+- Comparacao de limite planejado vs gasto realizado por categoria.
 - Testes de integracao para autenticacao, contas e categorias.
 - Testes de integracao para transacoes e regras principais de saldo.
 - Testes de integracao para dashboard.
+- Testes de integracao para orcamentos.
+- Frontend React com TypeScript, Vite, TailwindCSS e Recharts.
+- Estrutura inicial do frontend.
+- Cliente HTTP base para consumir a API versionada.
+- Armazenamento local de JWT preparado para as telas autenticadas.
 
 Ainda nao foram implementados:
 
-- Orcamentos.
-- Frontend.
+- Telas de autenticacao.
+- Dashboard frontend.
+- Telas de contas, categorias, transacoes e orcamentos.
 - IA.
 
 ## 13. Dashboard Backend Implementado
@@ -430,7 +443,48 @@ Regras:
 - Dados financeiros criticos sao agregados no backend.
 - O frontend deve consumir esses dados prontos para cards e graficos.
 
-## 14. Comandos Oficiais Do Backend
+## 14. Orcamentos Mensais Implementados
+
+Endpoint oficial:
+
+```txt
+/api/v1/budgets
+```
+
+Rotas:
+
+- `POST /api/v1/budgets`
+- `GET /api/v1/budgets`
+- `GET /api/v1/budgets/{budget_id}`
+- `PATCH /api/v1/budgets/{budget_id}`
+- `DELETE /api/v1/budgets/{budget_id}`
+
+Resposta:
+
+- `category_id`
+- `category_name`
+- `month`
+- `year`
+- `limit_amount`
+- `spent_amount`
+- `remaining_amount`
+- `usage_percent`
+- `is_over_limit`
+- `is_active`
+
+Regras:
+
+- Todo orcamento pertence a um usuario.
+- Usuario so acessa seus proprios orcamentos.
+- Orcamento deve usar categoria de despesa ativa do proprio usuario.
+- Nao pode existir mais de um orcamento ativo para a mesma categoria no mesmo mes e ano.
+- Duplicidade ativa tambem e protegida por indice unico parcial no PostgreSQL.
+- Remocao usa soft delete com `is_active=false`.
+- Orcamentos inativos nao aparecem na listagem padrao.
+- Gasto realizado considera apenas transacoes ativas de despesa no periodo.
+- Valores monetarios usam `Decimal/Numeric`.
+
+## 15. Comandos Oficiais Do Backend
 
 Criar venv:
 
@@ -480,9 +534,91 @@ Criar migration futura:
 alembic revision --autogenerate -m "mensagem"
 ```
 
-## 15. Criterio Para Avancar Para Orcamentos Mensais
+## 16. Setup Frontend Implementado
 
-Antes da fase de orcamentos mensais, validar:
+Estrutura oficial:
+
+```txt
+frontend/
+  src/
+    api/
+    features/
+    components/
+    hooks/
+    lib/
+    types/
+    styles/
+```
+
+Stack:
+
+- React
+- TypeScript
+- Vite
+- TailwindCSS
+- React Router
+- Recharts
+- Lucide React
+
+Arquivos principais:
+
+- `src/api/client.ts`
+- `src/api/endpoints.ts`
+- `src/lib/auth.ts`
+- `src/lib/routes.ts`
+- `src/types/api.ts`
+- `src/App.tsx`
+- `src/main.tsx`
+
+Regras:
+
+- Frontend consome a API pelo prefixo configurado em `VITE_API_URL`.
+- Token JWT fica isolado em helper proprio em `src/lib/auth.ts`.
+- Cliente HTTP entende envelope padrao de sucesso e erro da API.
+- Frontend nao calcula regras financeiras criticas.
+- Telas reais de autenticacao com formularios ficam para a proxima fase.
+
+## 17. Comandos Oficiais Do Frontend
+
+Instalar dependencias:
+
+```bash
+npm install
+```
+
+Rodar frontend:
+
+```bash
+npm run dev
+```
+
+Build de producao:
+
+```bash
+npm run build
+```
+
+Checagem TypeScript:
+
+```bash
+npm run typecheck
+```
+
+Preview do build:
+
+```bash
+npm run preview
+```
+
+Variavel de ambiente:
+
+```env
+VITE_API_URL=http://localhost:8000/api/v1
+```
+
+## 18. Criterio Para Avancar Para Telas De Autenticacao
+
+Antes da fase de telas de autenticacao, validar:
 
 - CRUD de contas funcional.
 - CRUD de categorias funcional.
@@ -505,10 +641,21 @@ Antes da fase de orcamentos mensais, validar:
 - Dashboard filtra dados por usuario.
 - Dashboard ignora transacoes removidas logicamente.
 - Dashboard entrega dados agregados para graficos.
+- CRUD de orcamentos funcional.
+- Orcamentos filtram dados por usuario.
+- Orcamentos exigem categoria de despesa.
+- Orcamentos calculam gasto realizado do periodo.
+- Orcamentos bloqueiam duplicidade ativa por categoria, mes e ano.
+- Frontend instala dependencias sem vulnerabilidades conhecidas.
+- Frontend executa `npm run typecheck`.
+- Frontend executa `npm run build`.
+- Estrutura oficial de pastas existe.
+- Cliente HTTP base esta configurado.
+- `.env.example` do frontend existe com `VITE_API_URL`.
 - Testes passando.
 - `alembic check` sem diferencas pendentes.
 
-## 16. Fora Do MVP
+## 19. Fora Do MVP
 
 - Open Finance.
 - Importacao automatica de extratos.
@@ -527,7 +674,7 @@ Antes da fase de orcamentos mensais, validar:
 - Recomendacoes de investimento personalizadas.
 - Integracao contabil ou fiscal.
 
-## 17. Descricao Para Portfolio
+## 20. Descricao Para Portfolio
 
 Sistema web de gestao financeira pessoal desenvolvido com FastAPI, PostgreSQL, SQLAlchemy, Alembic, JWT, React, TypeScript e TailwindCSS.
 

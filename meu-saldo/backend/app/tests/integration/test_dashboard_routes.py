@@ -169,3 +169,38 @@ def test_dashboard_requires_authentication_and_validates_period() -> None:
     assert invalid_response.json()["error"]["code"] == "VALIDATION_ERROR"
 
     cleanup_user(email)
+
+
+def test_dashboard_summary_returns_empty_financial_state() -> None:
+    email = unique_email()
+    token = create_user_token(email)
+
+    response = client.get("/api/v1/dashboard/summary?year=2026&month=6", headers=auth_headers(token))
+
+    assert response.status_code == 200
+    data = response.json()["data"]
+    assert data["total_balance"] == "0.00"
+    assert data["monthly_income"] == "0.00"
+    assert data["monthly_expense"] == "0.00"
+    assert data["monthly_net"] == "0.00"
+    assert data["active_accounts"] == 0
+    assert data["transactions_count"] == 0
+    assert data["expense_by_category"] == []
+    assert data["cashflow_by_day"] == []
+
+    cleanup_user(email)
+
+
+def test_dashboard_summary_accepts_default_current_period() -> None:
+    email = unique_email()
+    token = create_user_token(email)
+
+    response = client.get("/api/v1/dashboard/summary", headers=auth_headers(token))
+
+    assert response.status_code == 200
+    data = response.json()["data"]
+    assert 2000 <= data["period"]["year"] <= 2100
+    assert 1 <= data["period"]["month"] <= 12
+    assert data["total_balance"] == "0.00"
+
+    cleanup_user(email)

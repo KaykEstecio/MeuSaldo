@@ -31,10 +31,13 @@ Esta fase configura a base da API, autenticacao inicial, CRUD de contas, CRUD de
 - Bloqueio da linha da conta ao recalcular saldo em criacao, edicao e remocao de transacoes
 - Dashboard backend em `/api/v1/dashboard/summary`
 - Agregacoes financeiras por usuario para saldo, receitas, despesas, categorias e fluxo diario
-- Testes de integracao da autenticacao, contas, categorias, transacoes e dashboard
+- CRUD de orcamentos em `/api/v1/budgets`
+- Orcamentos mensais vinculados a categorias de despesa
+- Comparacao de limite planejado vs gasto realizado
+- Testes de integracao da autenticacao, contas, categorias, transacoes, dashboard e orcamentos
 - Estrutura inicial de pastas
 
-Orcamentos, frontend e IA ainda nao foram implementados.
+Frontend e IA ainda nao foram implementados.
 
 ## Como Rodar Localmente
 
@@ -320,6 +323,49 @@ curl "http://localhost:8000/api/v1/dashboard/summary?year=2026&month=6" ^
 ```
 
 A resposta inclui saldo total atual, receitas do mes, despesas do mes, saldo liquido do mes, total de contas ativas, total de transacoes do periodo, despesas por categoria e fluxo diario para graficos.
+
+## Orcamentos
+
+Criar orcamento mensal:
+
+```bash
+curl -X POST http://localhost:8000/api/v1/budgets ^
+  -H "Authorization: Bearer SEU_TOKEN" ^
+  -H "Content-Type: application/json" ^
+  -d "{\"category_id\":\"CATEGORY_ID\",\"month\":6,\"year\":2026,\"limit_amount\":\"500.00\"}"
+```
+
+Listar orcamentos:
+
+```bash
+curl "http://localhost:8000/api/v1/budgets?year=2026&month=6" ^
+  -H "Authorization: Bearer SEU_TOKEN"
+```
+
+Consultar orcamento:
+
+```bash
+curl http://localhost:8000/api/v1/budgets/BUDGET_ID ^
+  -H "Authorization: Bearer SEU_TOKEN"
+```
+
+Atualizar orcamento:
+
+```bash
+curl -X PATCH http://localhost:8000/api/v1/budgets/BUDGET_ID ^
+  -H "Authorization: Bearer SEU_TOKEN" ^
+  -H "Content-Type: application/json" ^
+  -d "{\"limit_amount\":\"600.00\"}"
+```
+
+Remover orcamento:
+
+```bash
+curl -X DELETE http://localhost:8000/api/v1/budgets/BUDGET_ID ^
+  -H "Authorization: Bearer SEU_TOKEN"
+```
+
+Orcamentos so podem usar categorias de despesa do proprio usuario. A resposta inclui `spent_amount`, `remaining_amount`, `usage_percent` e `is_over_limit`.
 
 ## Testes
 
