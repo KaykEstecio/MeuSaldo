@@ -1,10 +1,13 @@
 import { FormEvent, useEffect, useState } from "react";
 import { Edit3, Loader2, Plus, Trash2, X } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 import { ApiError } from "../../api/client";
 import { createCategory, deleteCategory, listCategories, updateCategory } from "../../api/endpoints";
 import { FinanceShell } from "../../components/layout/FinanceShell";
+import { useAuthToken } from "../../hooks/useAuthToken";
 import { categoryTypeLabels } from "../../lib/financeLabels";
+import { ROUTES } from "../../lib/routes";
 import type { Category, CategoryType } from "../../types/api";
 
 const initialForm = {
@@ -19,6 +22,8 @@ function getErrorMessage(error: unknown, fallback: string) {
 }
 
 export function CategoriesPage() {
+  const { clearToken } = useAuthToken();
+  const navigate = useNavigate();
   const [categories, setCategories] = useState<Category[]>([]);
   const [form, setForm] = useState(initialForm);
   const [editingCategory, setEditingCategory] = useState<Category | null>(null);
@@ -26,6 +31,16 @@ export function CategoriesPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState("");
   const [message, setMessage] = useState("");
+
+  function handleError(caughtError: unknown, fallback: string) {
+    if (caughtError instanceof ApiError && caughtError.status === 401) {
+      clearToken();
+      navigate(ROUTES.login, { replace: true });
+      return;
+    }
+
+    setError(getErrorMessage(caughtError, fallback));
+  }
 
   async function loadData() {
     setIsLoading(true);
@@ -35,7 +50,7 @@ export function CategoriesPage() {
       const response = await listCategories();
       setCategories(response.data);
     } catch (caughtError) {
-      setError(getErrorMessage(caughtError, "Nao foi possivel carregar as categorias."));
+      handleError(caughtError, "Nao foi possivel carregar as categorias.");
     } finally {
       setIsLoading(false);
     }
@@ -74,7 +89,7 @@ export function CategoriesPage() {
       resetForm();
       await loadData();
     } catch (caughtError) {
-      setError(getErrorMessage(caughtError, "Nao foi possivel salvar a categoria."));
+      handleError(caughtError, "Nao foi possivel salvar a categoria.");
     } finally {
       setIsSubmitting(false);
     }
@@ -89,7 +104,7 @@ export function CategoriesPage() {
       setMessage("Categoria removida com sucesso.");
       await loadData();
     } catch (caughtError) {
-      setError(getErrorMessage(caughtError, "Nao foi possivel remover a categoria."));
+      handleError(caughtError, "Nao foi possivel remover a categoria.");
     }
   }
 
@@ -99,7 +114,7 @@ export function CategoriesPage() {
       subtitle="Organize receitas e despesas para que os relatorios do dashboard sejam consistentes."
     >
       <div className="grid gap-5 lg:grid-cols-[380px_1fr]">
-        <section className="rounded-lg border border-slate-200 bg-white p-5 shadow-sm">
+        <section className="min-w-0 rounded-lg border border-slate-200 bg-white p-5 shadow-sm">
           <div className="flex items-center justify-between gap-3">
             <div>
               <h2 className="text-lg font-semibold text-ink-900">
@@ -183,7 +198,7 @@ export function CategoriesPage() {
           </form>
         </section>
 
-        <section className="rounded-lg border border-slate-200 bg-white p-5 shadow-sm">
+        <section className="min-w-0 rounded-lg border border-slate-200 bg-white p-5 shadow-sm">
           <h2 className="text-lg font-semibold text-ink-900">Categorias cadastradas</h2>
           <p className="mt-1 text-sm text-ink-500">{categories.length} categoria(s) ativa(s)</p>
 

@@ -1,5 +1,6 @@
 import { FormEvent, useEffect, useMemo, useState } from "react";
 import { Edit3, Loader2, Plus, Trash2, X } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 import { ApiError } from "../../api/client";
 import {
@@ -11,8 +12,10 @@ import {
   updateTransaction,
 } from "../../api/endpoints";
 import { FinanceShell } from "../../components/layout/FinanceShell";
+import { useAuthToken } from "../../hooks/useAuthToken";
 import { categoryTypeLabels, transactionTypeLabels } from "../../lib/financeLabels";
 import { formatCurrency, formatShortDate } from "../../lib/formatters";
+import { ROUTES } from "../../lib/routes";
 import type { Account, Category, Transaction, TransactionType } from "../../types/api";
 
 function todayInputValue() {
@@ -33,6 +36,8 @@ function getErrorMessage(error: unknown, fallback: string) {
 }
 
 export function TransactionsPage() {
+  const { clearToken } = useAuthToken();
+  const navigate = useNavigate();
   const [accounts, setAccounts] = useState<Account[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [transactions, setTransactions] = useState<Transaction[]>([]);
@@ -49,6 +54,16 @@ export function TransactionsPage() {
     () => categories.filter((category) => category.type === form.type),
     [categories, form.type],
   );
+
+  function handleError(caughtError: unknown, fallback: string) {
+    if (caughtError instanceof ApiError && caughtError.status === 401) {
+      clearToken();
+      navigate(ROUTES.login, { replace: true });
+      return;
+    }
+
+    setError(getErrorMessage(caughtError, fallback));
+  }
 
   async function loadData() {
     setIsLoading(true);
@@ -73,7 +88,7 @@ export function TransactionsPage() {
           "",
       }));
     } catch (caughtError) {
-      setError(getErrorMessage(caughtError, "Nao foi possivel carregar as transacoes."));
+      handleError(caughtError, "Nao foi possivel carregar as transacoes.");
     } finally {
       setIsLoading(false);
     }
@@ -109,7 +124,7 @@ export function TransactionsPage() {
       resetForm();
       await loadData();
     } catch (caughtError) {
-      setError(getErrorMessage(caughtError, "Nao foi possivel salvar a transacao."));
+      handleError(caughtError, "Nao foi possivel salvar a transacao.");
     } finally {
       setIsSubmitting(false);
     }
@@ -124,7 +139,7 @@ export function TransactionsPage() {
       setMessage("Transacao removida com sucesso.");
       await loadData();
     } catch (caughtError) {
-      setError(getErrorMessage(caughtError, "Nao foi possivel remover a transacao."));
+      handleError(caughtError, "Nao foi possivel remover a transacao.");
     }
   }
 
@@ -143,7 +158,7 @@ export function TransactionsPage() {
       subtitle="Registre receitas e despesas. O backend recalcula o saldo das contas de forma atomica."
     >
       <div className="grid gap-5 xl:grid-cols-[420px_1fr]">
-        <section className="rounded-lg border border-slate-200 bg-white p-5 shadow-sm">
+        <section className="min-w-0 rounded-lg border border-slate-200 bg-white p-5 shadow-sm">
           <div className="flex items-center justify-between gap-3">
             <div>
               <h2 className="text-lg font-semibold text-ink-900">
@@ -268,7 +283,7 @@ export function TransactionsPage() {
           </form>
         </section>
 
-        <section className="rounded-lg border border-slate-200 bg-white p-5 shadow-sm">
+        <section className="min-w-0 rounded-lg border border-slate-200 bg-white p-5 shadow-sm">
           <h2 className="text-lg font-semibold text-ink-900">Transacoes cadastradas</h2>
           <p className="mt-1 text-sm text-ink-500">{transactions.length} transacao(oes) ativa(s)</p>
 

@@ -1,11 +1,14 @@
 import { FormEvent, useEffect, useState } from "react";
 import { Edit3, Loader2, Plus, Trash2, X } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 import { ApiError } from "../../api/client";
 import { createAccount, deleteAccount, listAccounts, updateAccount } from "../../api/endpoints";
 import { FinanceShell } from "../../components/layout/FinanceShell";
+import { useAuthToken } from "../../hooks/useAuthToken";
 import { accountTypeLabels } from "../../lib/financeLabels";
 import { formatCurrency } from "../../lib/formatters";
+import { ROUTES } from "../../lib/routes";
 import type { Account, AccountType } from "../../types/api";
 
 const initialForm = {
@@ -19,6 +22,8 @@ function getErrorMessage(error: unknown, fallback: string) {
 }
 
 export function AccountsPage() {
+  const { clearToken } = useAuthToken();
+  const navigate = useNavigate();
   const [accounts, setAccounts] = useState<Account[]>([]);
   const [form, setForm] = useState(initialForm);
   const [editingAccount, setEditingAccount] = useState<Account | null>(null);
@@ -26,6 +31,16 @@ export function AccountsPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState("");
   const [message, setMessage] = useState("");
+
+  function handleError(caughtError: unknown, fallback: string) {
+    if (caughtError instanceof ApiError && caughtError.status === 401) {
+      clearToken();
+      navigate(ROUTES.login, { replace: true });
+      return;
+    }
+
+    setError(getErrorMessage(caughtError, fallback));
+  }
 
   async function loadData() {
     setIsLoading(true);
@@ -35,7 +50,7 @@ export function AccountsPage() {
       const response = await listAccounts();
       setAccounts(response.data);
     } catch (caughtError) {
-      setError(getErrorMessage(caughtError, "Nao foi possivel carregar as contas."));
+      handleError(caughtError, "Nao foi possivel carregar as contas.");
     } finally {
       setIsLoading(false);
     }
@@ -70,7 +85,7 @@ export function AccountsPage() {
       resetForm();
       await loadData();
     } catch (caughtError) {
-      setError(getErrorMessage(caughtError, "Nao foi possivel salvar a conta."));
+      handleError(caughtError, "Nao foi possivel salvar a conta.");
     } finally {
       setIsSubmitting(false);
     }
@@ -85,7 +100,7 @@ export function AccountsPage() {
       setMessage("Conta removida com sucesso.");
       await loadData();
     } catch (caughtError) {
-      setError(getErrorMessage(caughtError, "Nao foi possivel remover a conta."));
+      handleError(caughtError, "Nao foi possivel remover a conta.");
     }
   }
 
@@ -95,7 +110,7 @@ export function AccountsPage() {
       subtitle="Cadastre contas financeiras e acompanhe o saldo atual calculado pelas transacoes."
     >
       <div className="grid gap-5 lg:grid-cols-[380px_1fr]">
-        <section className="rounded-lg border border-slate-200 bg-white p-5 shadow-sm">
+        <section className="min-w-0 rounded-lg border border-slate-200 bg-white p-5 shadow-sm">
           <div className="flex items-center justify-between gap-3">
             <div>
               <h2 className="text-lg font-semibold text-ink-900">
@@ -173,7 +188,7 @@ export function AccountsPage() {
           </form>
         </section>
 
-        <section className="rounded-lg border border-slate-200 bg-white p-5 shadow-sm">
+        <section className="min-w-0 rounded-lg border border-slate-200 bg-white p-5 shadow-sm">
           <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
             <div>
               <h2 className="text-lg font-semibold text-ink-900">Contas cadastradas</h2>
