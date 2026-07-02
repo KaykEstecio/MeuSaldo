@@ -2,9 +2,9 @@
 
 Frontend do MeuSaldo usando React, TypeScript, Vite, TailwindCSS e Recharts.
 
-## Escopo Da Fase 13
+## Escopo Da Fase 16
 
-Esta fase cria apenas a base tecnica do frontend:
+Esta fase cobre a base tecnica do frontend, as telas de autenticacao, o dashboard financeiro e as telas financeiras operacionais:
 
 - React com TypeScript
 - Vite
@@ -13,9 +13,20 @@ Esta fase cria apenas a base tecnica do frontend:
 - React Router configurado
 - Cliente HTTP base para API
 - Estrutura oficial de pastas
-- Layout tecnico minimo para validar o setup
+- Tela de login em `/login`
+- Tela de cadastro em `/register`
+- Dashboard financeiro em `/dashboard`
+- Cards de saldo, receitas, despesas e resultado mensal
+- Grafico de fluxo de caixa diario
+- Grafico de despesas por categoria
+- Filtro de periodo por mes e ano
+- Tela de contas em `/accounts`
+- Tela de categorias em `/categories`
+- Tela de transacoes em `/transactions`
+- Armazenamento local do JWT
+- Logout
 
-Telas de autenticacao, dashboard, contas, categorias, transacoes, orcamentos e IA ainda nao foram implementadas.
+Orcamentos e IA ainda nao foram implementadas no frontend.
 
 ## Como Rodar Localmente
 

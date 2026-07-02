@@ -65,8 +65,8 @@ DATABASE_URL=postgresql+psycopg://postgres:postgres@localhost:5432/meusaldodb
 
 ## Status
 
-Fase atual concluida: setup frontend.
+Fase atual concluida: telas financeiras operacionais no frontend.
 
-Ja existem backend FastAPI completo ate orcamentos mensais, PostgreSQL via Docker, SQLAlchemy, Alembic, autenticacao JWT, CRUDs financeiros, dashboard backend e base frontend com React, TypeScript, Vite, TailwindCSS e Recharts.
+Ja existem backend FastAPI completo ate orcamentos mensais, PostgreSQL via Docker, SQLAlchemy, Alembic, autenticacao JWT, CRUDs financeiros, dashboard backend e frontend com React, TypeScript, Vite, TailwindCSS, tela de login, tela de cadastro, dashboard financeiro com cards e graficos e telas de contas, categorias e transacoes.
 
-Ainda nao foram implementadas as telas reais do frontend nem IA.
+Ainda nao foram implementadas a tela de orcamentos nem IA.

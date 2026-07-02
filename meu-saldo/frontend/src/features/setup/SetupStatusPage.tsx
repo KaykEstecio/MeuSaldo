@@ -25,7 +25,7 @@ const setupItems = [
 
 export function SetupStatusPage() {
   return (
-    <section className="flex flex-1 flex-col justify-center gap-10 py-8">
+    <section className="mx-auto flex min-h-screen w-full max-w-6xl flex-col justify-center gap-10 px-6 py-8 sm:px-8">
       <div className="max-w-3xl">
         <p className="text-sm font-semibold uppercase text-brand-700">MeuSaldo</p>
         <h1 className="mt-4 text-4xl font-semibold tracking-normal text-ink-900 sm:text-5xl">

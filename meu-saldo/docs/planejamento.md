@@ -365,9 +365,9 @@ Regras:
 11. Dashboard backend. Concluido.
 12. Orcamentos mensais. Concluido.
 13. Setup frontend. Concluido.
-14. Telas de autenticacao.
-15. Dashboard frontend.
-16. Telas de contas, categorias e transacoes.
+14. Telas de autenticacao. Concluido.
+15. Dashboard frontend. Concluido.
+16. Telas de contas, categorias e transacoes. Concluido.
 17. Tela de orcamentos.
 18. Assistente IA com fallback por regras.
 19. Refinamento, seguranca e documentacao.
@@ -377,7 +377,7 @@ Regras:
 Status atual:
 
 ```txt
-Fase 13 - Setup frontend concluido
+Fase 16 - Telas de contas, categorias e transacoes concluido
 ```
 
 Ja foram implementados:
@@ -407,12 +407,22 @@ Ja foram implementados:
 - Estrutura inicial do frontend.
 - Cliente HTTP base para consumir a API versionada.
 - Armazenamento local de JWT preparado para as telas autenticadas.
+- Tela de login conectada ao backend.
+- Tela de cadastro conectada ao backend.
+- Rotas publicas e protegidas configuradas no frontend.
+- Logout implementado.
+- Dashboard frontend conectado ao endpoint `GET /api/v1/dashboard/summary`.
+- Cards financeiros do periodo.
+- Graficos de fluxo de caixa diario e despesas por categoria com Recharts.
+- Filtro mensal do dashboard.
+- Tela de contas conectada ao CRUD de contas.
+- Tela de categorias conectada ao CRUD de categorias.
+- Tela de transacoes conectada ao CRUD de transacoes.
+- Navegacao autenticada entre dashboard, contas, categorias e transacoes.
 
 Ainda nao foram implementados:
 
-- Telas de autenticacao.
-- Dashboard frontend.
-- Telas de contas, categorias, transacoes e orcamentos.
+- Tela de orcamentos no frontend.
 - IA.
 
 ## 13. Dashboard Backend Implementado
@@ -576,9 +586,85 @@ Regras:
 - Token JWT fica isolado em helper proprio em `src/lib/auth.ts`.
 - Cliente HTTP entende envelope padrao de sucesso e erro da API.
 - Frontend nao calcula regras financeiras criticas.
-- Telas reais de autenticacao com formularios ficam para a proxima fase.
+- Telas reais de autenticacao com formularios foram implementadas na fase 14.
 
-## 17. Comandos Oficiais Do Frontend
+## 17. Telas De Autenticacao Implementadas
+
+Rotas:
+
+- `/login`
+- `/register`
+- `/dashboard`
+
+Arquivos principais:
+
+- `src/features/auth/LoginPage.tsx`
+- `src/features/auth/RegisterPage.tsx`
+- `src/features/auth/AuthenticatedStartPage.tsx`
+- `src/features/auth/components/AuthLayout.tsx`
+- `src/components/navigation/GuestRoute.tsx`
+- `src/components/navigation/ProtectedRoute.tsx`
+
+Regras:
+
+- Login chama `POST /api/v1/auth/login`.
+- Cadastro chama `POST /api/v1/auth/register`.
+- JWT retornado no login e salvo pelo helper `src/lib/auth.ts`.
+- Rotas publicas redirecionam usuario autenticado para `/dashboard`.
+- Rota protegida redireciona usuario sem token para `/login`.
+- Logout remove o token local.
+- Dashboard real foi implementado na fase 15 consumindo agregados financeiros do backend.
+
+## 18. Dashboard Frontend Implementado
+
+Rota:
+
+- `/dashboard`
+
+Arquivos principais:
+
+- `src/features/dashboard/DashboardPage.tsx`
+- `src/api/endpoints.ts`
+- `src/types/api.ts`
+- `src/lib/formatters.ts`
+
+Regras:
+
+- Dashboard chama `GET /api/v1/dashboard/summary`.
+- Periodo e enviado por query string com `year` e `month`.
+- Cards e graficos usam somente agregados retornados pelo backend.
+- Frontend nao recalcula regras financeiras criticas.
+- Erro `401` remove o token local e redireciona para `/login`.
+- Graficos usam Recharts para fluxo de caixa diario e despesas por categoria.
+
+## 19. Telas Financeiras Operacionais Implementadas
+
+Rotas:
+
+- `/accounts`
+- `/categories`
+- `/transactions`
+
+Arquivos principais:
+
+- `src/components/layout/FinanceShell.tsx`
+- `src/features/finance/AccountsPage.tsx`
+- `src/features/finance/CategoriesPage.tsx`
+- `src/features/finance/TransactionsPage.tsx`
+- `src/lib/financeLabels.ts`
+- `src/api/endpoints.ts`
+- `src/types/api.ts`
+
+Regras:
+
+- Todas as rotas ficam protegidas por JWT.
+- Contas, categorias e transacoes consomem a API versionada.
+- O frontend nao recalcula saldo de conta.
+- Criacao, edicao e remocao chamam os services do backend via endpoints oficiais.
+- Transacoes exigem conta e categoria existentes.
+- Remocao usa os endpoints de delete do backend, mantendo a regra de soft delete quando aplicavel.
+
+## 20. Comandos Oficiais Do Frontend
 
 Instalar dependencias:
 
@@ -616,9 +702,9 @@ Variavel de ambiente:
 VITE_API_URL=http://localhost:8000/api/v1
 ```
 
-## 18. Criterio Para Avancar Para Telas De Autenticacao
+## 19. Criterio Para Avancar Para Dashboard Frontend
 
-Antes da fase de telas de autenticacao, validar:
+Antes da fase de dashboard frontend, validar:
 
 - CRUD de contas funcional.
 - CRUD de categorias funcional.
@@ -652,10 +738,16 @@ Antes da fase de telas de autenticacao, validar:
 - Estrutura oficial de pastas existe.
 - Cliente HTTP base esta configurado.
 - `.env.example` do frontend existe com `VITE_API_URL`.
+- Tela de login renderiza.
+- Tela de cadastro renderiza.
+- Login salva token JWT.
+- Cadastro redireciona para login.
+- Rota protegida bloqueia usuario sem token.
+- Logout remove token local.
 - Testes passando.
 - `alembic check` sem diferencas pendentes.
 
-## 19. Fora Do MVP
+## 20. Fora Do MVP
 
 - Open Finance.
 - Importacao automatica de extratos.
@@ -674,7 +766,7 @@ Antes da fase de telas de autenticacao, validar:
 - Recomendacoes de investimento personalizadas.
 - Integracao contabil ou fiscal.
 
-## 20. Descricao Para Portfolio
+## 21. Descricao Para Portfolio
 
 Sistema web de gestao financeira pessoal desenvolvido com FastAPI, PostgreSQL, SQLAlchemy, Alembic, JWT, React, TypeScript e TailwindCSS.
 

@@ -8,7 +8,7 @@ class Settings(BaseSettings):
     app_env: str = "development"
     app_debug: bool = True
     database_url: str
-    cors_origins: str = "http://localhost:5173"
+    cors_origins: str = "http://localhost:5173,http://127.0.0.1:5173"
     jwt_secret_key: str
     jwt_algorithm: str = "HS256"
     jwt_access_token_expire_minutes: int = 30
