@@ -1,10 +1,12 @@
+from datetime import UTC, datetime
+
 from sqlalchemy.orm import Session
 
 from app.core.config import settings
 from app.core.exceptions import AppError
 from app.core.security import create_access_token, get_password_hash, verify_password
 from app.models.user import User
-from app.repositories.user_repository import create_user, get_user_by_email
+from app.repositories.user_repository import create_user, get_user_by_email, update_user_last_login
 from app.schemas.auth import LoginRequest, RegisterRequest, TokenResponse
 
 
@@ -48,6 +50,7 @@ def authenticate_user(db: Session, payload: LoginRequest) -> TokenResponse:
             message="Usuario inativo",
         )
 
+    user = update_user_last_login(db, user, datetime.now(UTC))
     access_token = create_access_token(str(user.id))
     return TokenResponse(
         access_token=access_token,

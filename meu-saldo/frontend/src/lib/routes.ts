@@ -8,4 +8,5 @@ export const ROUTES = {
   transactions: "/transactions",
   budgets: "/budgets",
   aiAssistant: "/ai-assistant",
+  admin: "/admin",
 } as const;

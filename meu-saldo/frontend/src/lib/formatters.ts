@@ -28,3 +28,10 @@ export function formatMonthLabel(year: number, month: number, locale = "pt-BR"):
     year: "numeric",
   }).format(new Date(year, month - 1, 1));
 }
+
+export function formatDateTime(value: string, locale = "pt-BR"): string {
+  return new Intl.DateTimeFormat(locale, {
+    dateStyle: "short",
+    timeStyle: "short",
+  }).format(new Date(value));
+}

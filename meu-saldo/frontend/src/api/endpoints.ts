@@ -2,6 +2,8 @@ import { apiRequest } from "./client";
 import type {
   Account,
   AccountType,
+  AdminMetrics,
+  AdminUser,
   AiAssistantReply,
   AiMessage,
   ApiResponse,
@@ -45,6 +47,14 @@ export function register(payload: RegisterPayload) {
 
 export function getCurrentUser() {
   return apiRequest<ApiResponse<User>>("/users/me");
+}
+
+export function getAdminMetrics() {
+  return apiRequest<ApiResponse<AdminMetrics>>("/admin");
+}
+
+export function listAdminUsers() {
+  return apiRequest<ListResponse<AdminUser>>("/admin/users?page=1&page_size=100");
 }
 
 export type DashboardSummaryParams = {

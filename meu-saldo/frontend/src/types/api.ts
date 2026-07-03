@@ -26,7 +26,9 @@ export type User = {
   id: string;
   name: string;
   email: string;
+  role: "user" | "admin";
   is_active: boolean;
+  last_login_at: string | null;
   created_at: string;
   updated_at: string;
 };
@@ -142,4 +144,17 @@ export type AiAssistantReply = {
   disclaimer: string;
   user_message: AiMessage;
   assistant_message: AiMessage;
+};
+
+export type AdminMetrics = {
+  total_users: number;
+  new_users_this_month: number;
+};
+
+export type AdminUser = {
+  id: string;
+  name: string;
+  email: string;
+  created_at: string;
+  last_login_at: string | null;
 };

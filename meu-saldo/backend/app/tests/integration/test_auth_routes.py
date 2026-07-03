@@ -57,6 +57,13 @@ def test_register_login_and_current_user() -> None:
     assert login_response.status_code == 200
     token = login_response.json()["data"]["access_token"]
     assert token
+    db = SessionLocal()
+    try:
+        logged_user = get_user_by_email(db, email)
+        assert logged_user is not None
+        assert logged_user.last_login_at is not None
+    finally:
+        db.close()
 
     current_user_response = client.get(
         "/api/v1/users/me",

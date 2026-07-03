@@ -170,7 +170,9 @@ Campos minimos:
 - `name`
 - `email`
 - `password_hash`
+- `role`
 - `is_active`
+- `last_login_at`
 - `created_at`
 - `updated_at`
 
@@ -179,6 +181,10 @@ Regras:
 - `email` deve ser unico.
 - Senha nunca deve ser salva em texto puro.
 - A API nunca deve retornar `password_hash`.
+- `role` deve controlar permissao de acesso administrativo.
+- Valores previstos para `role`: `user` e `admin`.
+- Usuario comum nao pode acessar rotas administrativas.
+- `last_login_at` deve ser atualizado a cada login bem-sucedido.
 
 ### accounts
 
@@ -788,6 +794,11 @@ Este topico registra melhorias futuras apos o fechamento do MVP. Nenhum item aba
 
 - Substituir armazenamento de JWT em `localStorage` por estrategia mais segura, preferencialmente cookies `HttpOnly`, `Secure` e `SameSite`.
 - Implementar refresh token com rotacao, expiracao, revogacao e documentacao de sessao.
+- Criar autorizacao por perfil com `role=user|admin` no backend, usando dependencia/middleware para bloquear rotas administrativas.
+- Criar rota protegida `/api/v1/admin` exclusiva para usuarios com `role=admin`.
+- Criar painel frontend `/admin` protegido, impedindo acesso de usuarios comuns tambem no roteamento do frontend.
+- Criar listagem administrativa de usuarios com `id`, `name`, `email` e `created_at`, sem expor `password_hash` ou dados financeiros.
+- Registrar `last_login_at` no usuario a cada login bem-sucedido para auditoria basica.
 - Criar testes frontend automatizados para login, dashboard, contas, categorias, transacoes, orcamentos e assistente.
 - Criar testes end-to-end para o fluxo real do usuario: cadastro, login, conta, categoria, transacao, dashboard, orcamento e assistente.
 - Adicionar pipeline de CI para rodar `pytest`, `alembic check`, `npm run typecheck`, `npm run build` e `npm audit`.
@@ -795,6 +806,32 @@ Este topico registra melhorias futuras apos o fechamento do MVP. Nenhum item aba
 - Adicionar rate limit nas rotas sensiveis: login, cadastro e assistente.
 - Melhorar observabilidade do backend com logs estruturados sem dados sensiveis.
 - Criar checklist automatizado de pos-deploy para Render, Neon e Vercel.
+
+### Painel Administrativo
+
+Ordem recomendada de implementacao:
+
+1. Atualizar model, schema e migration de `users` com `role` e `last_login_at`, se ainda nao existirem no banco.
+2. Atualizar login para registrar `last_login_at` somente em autenticacao bem-sucedida.
+3. Criar dependencia de backend para exigir usuario autenticado com `role=admin`.
+4. Criar endpoints administrativos sob `/api/v1/admin`.
+5. Implementar metricas gerais: total de usuarios cadastrados e novos registros no mes atual.
+6. Implementar listagem de usuarios com dados minimos: `id`, `name`, `email` e `created_at`.
+7. Criar rota frontend `/admin` protegida por autenticacao e permissao de admin.
+8. Adicionar bloqueio visual e redirecionamento para usuarios comuns.
+9. Criar testes de backend para garantir que usuarios comuns recebam `403 Forbidden`.
+10. Criar testes frontend para validar que usuario comum nao visualiza o painel admin.
+
+Regras obrigatorias:
+
+- Rotas administrativas devem retornar `403 Forbidden` para usuario autenticado sem permissao.
+- Usuario nao autenticado deve receber `401 Unauthorized`.
+- O frontend pode bloquear navegacao por experiencia de uso, mas a protecao real deve permanecer no backend.
+- O painel admin nao deve exibir saldos, transacoes, categorias, contas ou dados financeiros individuais de outros usuarios.
+- Metricas administrativas devem ser agregadas e nao devem quebrar isolamento financeiro por usuario.
+- Logs de auditoria devem registrar horario do ultimo login sem salvar senha, token JWT ou dados sensiveis.
+- A role `admin` nao deve ser atribuida por rota publica de cadastro.
+- A criacao do primeiro admin deve ser feita por seed, script controlado ou ajuste manual seguro no banco.
 
 ### Prioridade Media
 
