@@ -1,9 +1,11 @@
-import type { ReactNode } from "react";
+import { useEffect, useMemo, useState, type ReactNode } from "react";
 import { Link, NavLink, useNavigate } from "react-router-dom";
 import { LogOut, WalletCards } from "lucide-react";
 
+import { getCurrentUser } from "../../api/endpoints";
 import { useAuthToken } from "../../hooks/useAuthToken";
 import { ROUTES } from "../../lib/routes";
+import type { User } from "../../types/api";
 
 type FinanceShellProps = {
   children: ReactNode;
@@ -23,6 +25,38 @@ const navigationItems = [
 export function FinanceShell({ children, subtitle, title }: FinanceShellProps) {
   const { clearToken } = useAuthToken();
   const navigate = useNavigate();
+  const [currentUser, setCurrentUser] = useState<User | null>(null);
+  const visibleNavigationItems = useMemo(
+    () =>
+      currentUser?.role === "admin"
+        ? [...navigationItems, { label: "Administracao", to: ROUTES.admin }]
+        : navigationItems,
+    [currentUser],
+  );
+
+  useEffect(() => {
+    let isMounted = true;
+
+    async function loadCurrentUser() {
+      try {
+        const response = await getCurrentUser();
+
+        if (isMounted) {
+          setCurrentUser(response.data);
+        }
+      } catch {
+        if (isMounted) {
+          setCurrentUser(null);
+        }
+      }
+    }
+
+    void loadCurrentUser();
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   return (
     <section className="min-h-screen bg-slate-50">
@@ -53,7 +87,7 @@ export function FinanceShell({ children, subtitle, title }: FinanceShellProps) {
           </div>
 
           <nav className="flex gap-2 overflow-x-auto pb-1">
-            {navigationItems.map((item) => (
+            {visibleNavigationItems.map((item) => (
               <NavLink
                 className={({ isActive }) =>
                   `shrink-0 rounded-lg px-3 py-2 text-sm font-semibold transition ${
