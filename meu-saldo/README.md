@@ -41,6 +41,45 @@ URL local:
 http://localhost:5173
 ```
 
+## Deploy Atual
+
+Ambientes publicados:
+
+- Frontend Vercel: `https://meusaldo-frontend.vercel.app`
+- Backend Render: `https://meusaldo.onrender.com`
+- Swagger/OpenAPI: `https://meusaldo.onrender.com/docs`
+- Health da API: `https://meusaldo.onrender.com/health`
+- Health do banco: `https://meusaldo.onrender.com/health/db`
+- Banco de producao: Neon PostgreSQL
+
+Variaveis esperadas no frontend da Vercel:
+
+```env
+VITE_API_URL=https://meusaldo.onrender.com/api/v1
+```
+
+Variaveis esperadas no backend da Render:
+
+```env
+APP_ENV=production
+APP_DEBUG=false
+DATABASE_URL=postgresql+psycopg://USUARIO:SENHA@HOST/DB?sslmode=require
+CORS_ORIGINS=https://meusaldo-frontend.vercel.app
+JWT_SECRET_KEY=uma-chave-forte-de-producao
+JWT_ALGORITHM=HS256
+JWT_ACCESS_TOKEN_EXPIRE_MINUTES=30
+JWT_REFRESH_TOKEN_EXPIRE_DAYS=7
+```
+
+Observacoes do pos-deploy:
+
+- Backend Render validado com sucesso em `/health`.
+- Conexao Render -> Neon validada com sucesso em `/health/db`.
+- CORS do backend validado para a origem `https://meusaldo-frontend.vercel.app`.
+- O frontend precisa ser redeployado depois de configurar `VITE_API_URL` na Vercel.
+- O frontend tambem precisa redeployar o arquivo `frontend/vercel.json` para corrigir refresh e acesso direto em rotas como `/login`.
+- Em plano gratuito da Render, o primeiro acesso pode sofrer cold start.
+
 ## PostgreSQL Com Docker
 
 Suba o banco local:
