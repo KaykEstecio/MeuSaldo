@@ -111,3 +111,35 @@ export type Transaction = {
   created_at: string;
   updated_at: string;
 };
+
+export type Budget = {
+  id: string;
+  category_id: string;
+  category_name: string;
+  month: number;
+  year: number;
+  limit_amount: string;
+  spent_amount: string;
+  remaining_amount: string;
+  usage_percent: string;
+  is_over_limit: boolean;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
+};
+
+export type AiMessage = {
+  id: string;
+  role: "user" | "assistant";
+  content: string;
+  source: "user" | "rules" | "external";
+  created_at: string;
+};
+
+export type AiAssistantReply = {
+  answer: string;
+  source: "rules" | "external";
+  disclaimer: string;
+  user_message: AiMessage;
+  assistant_message: AiMessage;
+};

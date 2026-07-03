@@ -16,6 +16,8 @@ const navigationItems = [
   { label: "Contas", to: ROUTES.accounts },
   { label: "Categorias", to: ROUTES.categories },
   { label: "Transacoes", to: ROUTES.transactions },
+  { label: "Orcamentos", to: ROUTES.budgets },
+  { label: "Assistente", to: ROUTES.aiAssistant },
 ];
 
 export function FinanceShell({ children, subtitle, title }: FinanceShellProps) {

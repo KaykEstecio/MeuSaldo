@@ -7,4 +7,5 @@ export const ROUTES = {
   categories: "/categories",
   transactions: "/transactions",
   budgets: "/budgets",
+  aiAssistant: "/ai-assistant",
 } as const;

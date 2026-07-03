@@ -1,6 +1,6 @@
 from fastapi import APIRouter
 
-from app.api.v1 import accounts, auth, budgets, categories, dashboard, transactions, users
+from app.api.v1 import accounts, ai_assistant, auth, budgets, categories, dashboard, transactions, users
 
 
 api_router = APIRouter()
@@ -11,3 +11,4 @@ api_router.include_router(categories.router)
 api_router.include_router(transactions.router)
 api_router.include_router(dashboard.router)
 api_router.include_router(budgets.router)
+api_router.include_router(ai_assistant.router)

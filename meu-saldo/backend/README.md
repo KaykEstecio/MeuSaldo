@@ -2,7 +2,7 @@
 
 Backend inicial do MeuSaldo usando Python 3.12, FastAPI, PostgreSQL, SQLAlchemy e Alembic.
 
-## Escopo Da Fase 9
+## Escopo Atual
 
 Esta fase configura a base da API, autenticacao inicial, CRUD de contas, CRUD de categorias e CRUD de transacoes:
 
@@ -34,10 +34,13 @@ Esta fase configura a base da API, autenticacao inicial, CRUD de contas, CRUD de
 - CRUD de orcamentos em `/api/v1/budgets`
 - Orcamentos mensais vinculados a categorias de despesa
 - Comparacao de limite planejado vs gasto realizado
-- Testes de integracao da autenticacao, contas, categorias, transacoes, dashboard e orcamentos
+- Assistente financeiro em `/api/v1/ai-assistant/messages`
+- Fallback de IA por regras com dados agregados do usuario
+- Historico de mensagens em `ai_messages`
+- Testes de integracao da autenticacao, contas, categorias, transacoes, dashboard, orcamentos e assistente
 - Estrutura inicial de pastas
 
-Frontend e IA ainda nao foram implementados.
+Integracao com provedor externo de IA ainda nao foi implementada.
 
 ## Como Rodar Localmente
 
@@ -155,13 +158,85 @@ Aplicar migrations existentes:
 alembic upgrade head
 ```
 
+Se o comando `alembic` nao estiver disponivel no PATH, use:
+
+```bash
+python -m alembic upgrade head
+```
+
 Criar nova migration futuramente:
 
 ```bash
 alembic revision --autogenerate -m "mensagem"
 ```
 
-As migrations atuais cobrem os models base e o soft delete de transacoes. Novas alteracoes de schema devem gerar novas migrations.
+As migrations atuais cobrem:
+
+- `users`
+- `accounts`
+- `categories`
+- `transactions`
+- `budgets`
+- defaults de models base
+- soft delete de transacoes
+- unicidade de orcamentos ativos por usuario, categoria, ano e mes
+
+Novas alteracoes de schema devem gerar novas migrations.
+
+## Alembic Em Producao Neon
+
+Para aplicar migrations no banco Neon, configure temporariamente o `DATABASE_URL` do arquivo `.env` local com a mesma URL usada pela Render.
+
+Use o formato SQLAlchemy com o driver do projeto:
+
+```env
+DATABASE_URL=postgresql+psycopg://USUARIO:SENHA@HOST/DB?sslmode=require
+```
+
+Cuidados:
+
+- Nao use `DATABASE_URL=DATABASE_URL=...`.
+- Nao commite o arquivo `.env`.
+- Nao cole a URL real em logs, issues ou README.
+- Nao use `drop table` em producao.
+- Nao resete o banco Neon sem confirmacao explicita.
+
+Comandos recomendados dentro da pasta `backend`:
+
+```bash
+python -m alembic current
+python -m alembic heads
+python -m alembic history
+python -m alembic check
+python -m alembic upgrade head
+```
+
+Crie nova migration apenas se o `python -m alembic check` indicar diferencas reais entre models e banco:
+
+```bash
+python -m alembic revision --autogenerate -m "mensagem"
+```
+
+Validacao no Neon SQL Editor:
+
+```sql
+SELECT table_name
+FROM information_schema.tables
+WHERE table_schema = 'public'
+ORDER BY table_name;
+```
+
+As tabelas esperadas no banco atual sao:
+
+- `alembic_version`
+- `users`
+- `accounts`
+- `categories`
+- `transactions`
+- `budgets`
+- `ai_messages`
+
+Depois de aplicar migrations no Neon, normalmente nao e necessario fazer novo deploy na Render se o codigo ja estiver publicado. Basta testar novamente `/health/db`, cadastro e login. Faca Manual Deploy apenas se tambem houver alteracao de codigo pendente.
 
 ## Autenticacao
 
@@ -367,10 +442,38 @@ curl -X DELETE http://localhost:8000/api/v1/budgets/BUDGET_ID ^
 
 Orcamentos so podem usar categorias de despesa do proprio usuario. A resposta inclui `spent_amount`, `remaining_amount`, `usage_percent` e `is_over_limit`.
 
+## Assistente Financeiro
+
+Enviar mensagem para o assistente:
+
+```bash
+curl -X POST http://localhost:8000/api/v1/ai-assistant/messages ^
+  -H "Authorization: Bearer SEU_TOKEN" ^
+  -H "Content-Type: application/json" ^
+  -d "{\"message\":\"Como posso economizar este mes?\"}"
+```
+
+Listar historico:
+
+```bash
+curl http://localhost:8000/api/v1/ai-assistant/messages ^
+  -H "Authorization: Bearer SEU_TOKEN"
+```
+
+Nesta fase, o assistente usa `AI_PROVIDER=rules`, analisa apenas dados agregados do usuario autenticado e nao executa acoes financeiras.
+
 ## Testes
 
 Rodar todos os testes:
 
 ```bash
 pytest
+```
+
+## Revisao Final
+
+Checklist operacional do MVP:
+
+```txt
+../docs/revisao-final-mvp.md
 ```

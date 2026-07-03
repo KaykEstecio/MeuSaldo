@@ -2,7 +2,10 @@ import { apiRequest } from "./client";
 import type {
   Account,
   AccountType,
+  AiAssistantReply,
+  AiMessage,
   ApiResponse,
+  Budget,
   Category,
   CategoryType,
   DashboardSummary,
@@ -165,5 +168,69 @@ export function updateTransaction(transactionId: string, payload: Partial<Transa
 export function deleteTransaction(transactionId: string) {
   return apiRequest<ApiResponse<Transaction>>(`/transactions/${transactionId}`, {
     method: "DELETE",
+  });
+}
+
+export type BudgetListParams = {
+  month?: number;
+  year?: number;
+};
+
+export type BudgetPayload = {
+  category_id: string;
+  month: number;
+  year: number;
+  limit_amount: string;
+};
+
+export function listBudgets(params: BudgetListParams = {}) {
+  const searchParams = new URLSearchParams({
+    page: "1",
+    page_size: "100",
+  });
+
+  if (params.month !== undefined) {
+    searchParams.set("month", String(params.month));
+  }
+
+  if (params.year !== undefined) {
+    searchParams.set("year", String(params.year));
+  }
+
+  return apiRequest<ListResponse<Budget>>(`/budgets?${searchParams.toString()}`);
+}
+
+export function createBudget(payload: BudgetPayload) {
+  return apiRequest<ApiResponse<Budget>>("/budgets", {
+    method: "POST",
+    body: payload,
+  });
+}
+
+export function updateBudget(budgetId: string, payload: Partial<BudgetPayload>) {
+  return apiRequest<ApiResponse<Budget>>(`/budgets/${budgetId}`, {
+    method: "PATCH",
+    body: payload,
+  });
+}
+
+export function deleteBudget(budgetId: string) {
+  return apiRequest<ApiResponse<Budget>>(`/budgets/${budgetId}`, {
+    method: "DELETE",
+  });
+}
+
+export type AiAssistantPayload = {
+  message: string;
+};
+
+export function listAiMessages() {
+  return apiRequest<ListResponse<AiMessage>>("/ai-assistant/messages?page=1&page_size=50");
+}
+
+export function createAiMessage(payload: AiAssistantPayload) {
+  return apiRequest<ApiResponse<AiAssistantReply>>("/ai-assistant/messages", {
+    method: "POST",
+    body: payload,
   });
 }

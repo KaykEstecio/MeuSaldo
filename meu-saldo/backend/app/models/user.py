@@ -55,3 +55,7 @@ class User(Base):
         back_populates="user",
         cascade="all, delete-orphan",
     )
+    ai_messages: Mapped[list["AiMessage"]] = relationship(
+        back_populates="user",
+        cascade="all, delete-orphan",
+    )

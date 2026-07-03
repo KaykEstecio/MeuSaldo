@@ -76,8 +76,8 @@ Observacoes do pos-deploy:
 - Backend Render validado com sucesso em `/health`.
 - Conexao Render -> Neon validada com sucesso em `/health/db`.
 - CORS do backend validado para a origem `https://meusaldo-frontend.vercel.app`.
-- O frontend precisa ser redeployado depois de configurar `VITE_API_URL` na Vercel.
-- O frontend tambem precisa redeployar o arquivo `frontend/vercel.json` para corrigir refresh e acesso direto em rotas como `/login`.
+- O frontend publicado deve usar `VITE_API_URL=https://meusaldo.onrender.com/api/v1`.
+- O arquivo `frontend/vercel.json` mantem o fallback SPA para refresh e acesso direto em rotas como `/login`.
 - Em plano gratuito da Render, o primeiro acesso pode sofrer cold start.
 
 ## PostgreSQL Com Docker
@@ -104,8 +104,14 @@ DATABASE_URL=postgresql+psycopg://postgres:postgres@localhost:5432/meusaldodb
 
 ## Status
 
-Fase atual concluida: telas financeiras operacionais no frontend.
+Fase atual concluida: refinamento, seguranca e documentacao do MVP.
 
-Ja existem backend FastAPI completo ate orcamentos mensais, PostgreSQL via Docker, SQLAlchemy, Alembic, autenticacao JWT, CRUDs financeiros, dashboard backend e frontend com React, TypeScript, Vite, TailwindCSS, tela de login, tela de cadastro, dashboard financeiro com cards e graficos e telas de contas, categorias e transacoes.
+Ja existem backend FastAPI completo ate assistente financeiro com fallback por regras, PostgreSQL via Docker, SQLAlchemy, Alembic, autenticacao JWT, CRUDs financeiros, dashboard backend e frontend com React, TypeScript, Vite, TailwindCSS, tela de login, tela de cadastro, dashboard financeiro com cards e graficos e telas de contas, categorias, transacoes, orcamentos e assistente.
 
-Ainda nao foram implementadas a tela de orcamentos nem IA.
+Ainda nao foi implementada integracao com provedor externo de IA.
+
+Checklist final do MVP:
+
+```txt
+docs/revisao-final-mvp.md
+```

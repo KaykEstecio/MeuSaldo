@@ -2,7 +2,7 @@
 
 ## 1. Visao Geral
 
-O MeuSaldo e um sistema web de controle financeiro pessoal com autenticacao por usuario, controle de contas, categorias, transacoes, orcamentos, dashboards e, futuramente, um assistente de IA financeira.
+O MeuSaldo e um sistema web de controle financeiro pessoal com autenticacao por usuario, controle de contas, categorias, transacoes, orcamentos, dashboards e assistente de IA financeira com fallback por regras.
 
 O MVP deve priorizar seguranca, isolamento por usuario, consistencia dos dados financeiros, rastreabilidade, arquitetura simples de evoluir e documentacao clara.
 
@@ -28,8 +28,8 @@ O MVP deve priorizar seguranca, isolamento por usuario, consistencia dos dados f
 
 ### IA
 
-- Modulo futuro integrado por API externa
-- Fallback baseado em regras
+- Modulo atual com fallback baseado em regras
+- Integracao futura por API externa
 - IA sem permissao para executar acoes financeiras diretamente
 
 ## 3. Estrutura Oficial Do Projeto
@@ -156,11 +156,9 @@ Entidades principais:
 - `transactions`
 - `budgets`
 
-Entidade futura:
-
 - `ai_messages`
 
-`ai_messages` fica planejada para a fase de IA e nao deve ser prioridade antes da implementacao do assistente.
+`ai_messages` armazena o historico do assistente por usuario autenticado.
 
 ## 8. Modelagem Inicial
 
@@ -306,15 +304,16 @@ Regras implementadas:
 
 ### ai_messages
 
-Campos futuros:
+Campos implementados:
 
 - `id`
 - `user_id`
 - `role`
 - `content`
+- `source`
 - `created_at`
 
-Regras futuras:
+Regras:
 
 - IA deve receber preferencialmente dados agregados.
 - IA nao deve receber dados sensiveis desnecessarios.
@@ -368,16 +367,16 @@ Regras:
 14. Telas de autenticacao. Concluido.
 15. Dashboard frontend. Concluido.
 16. Telas de contas, categorias e transacoes. Concluido.
-17. Tela de orcamentos.
-18. Assistente IA com fallback por regras.
-19. Refinamento, seguranca e documentacao.
+17. Tela de orcamentos. Concluido.
+18. Assistente IA com fallback por regras. Concluido.
+19. Refinamento, seguranca e documentacao. Concluido.
 
 ## 12. Status Atual Do Projeto
 
 Status atual:
 
 ```txt
-Fase 16 - Telas de contas, categorias e transacoes concluido
+Fase 19 - Refinamento, seguranca e documentacao concluido
 ```
 
 Ja foram implementados:
@@ -418,12 +417,19 @@ Ja foram implementados:
 - Tela de contas conectada ao CRUD de contas.
 - Tela de categorias conectada ao CRUD de categorias.
 - Tela de transacoes conectada ao CRUD de transacoes.
-- Navegacao autenticada entre dashboard, contas, categorias e transacoes.
+- Tela de orcamentos conectada ao CRUD de orcamentos.
+- Assistente financeiro com fallback por regras.
+- Historico de mensagens em `ai_messages`.
+- Rota `POST /api/v1/ai-assistant/messages`.
+- Rota `GET /api/v1/ai-assistant/messages`.
+- Tela do assistente em `/ai-assistant`.
+- Navegacao autenticada entre dashboard, contas, categorias, transacoes, orcamentos e assistente.
+- Revisao final do MVP em `docs/revisao-final-mvp.md`.
+- Checklist de seguranca, deploy e validacao pos-deploy.
 
 Ainda nao foram implementados:
 
-- Tela de orcamentos no frontend.
-- IA.
+- Integracao com provedor externo de IA.
 
 ## 13. Dashboard Backend Implementado
 
@@ -773,3 +779,65 @@ Sistema web de gestao financeira pessoal desenvolvido com FastAPI, PostgreSQL, S
 O projeto possui autenticacao de usuarios, isolamento de dados por usuario, controle de contas, categorias, transacoes, orcamentos mensais, dashboard financeiro com dados agregados e assistente financeiro com fallback por regras.
 
 A arquitetura foi organizada em camadas, separando rotas, regras de negocio, acesso a dados, models e schemas, com foco em seguranca, consistencia financeira e evolucao futura.
+
+## 22. Melhorias E Atualizacoes Do Sistema
+
+Este topico registra melhorias futuras apos o fechamento do MVP. Nenhum item abaixo deve ser tratado como bug bloqueante do MVP, mas como evolucao planejada para aumentar seguranca, qualidade, usabilidade e maturidade operacional.
+
+### Prioridade Alta
+
+- Substituir armazenamento de JWT em `localStorage` por estrategia mais segura, preferencialmente cookies `HttpOnly`, `Secure` e `SameSite`.
+- Implementar refresh token com rotacao, expiracao, revogacao e documentacao de sessao.
+- Criar testes frontend automatizados para login, dashboard, contas, categorias, transacoes, orcamentos e assistente.
+- Criar testes end-to-end para o fluxo real do usuario: cadastro, login, conta, categoria, transacao, dashboard, orcamento e assistente.
+- Adicionar pipeline de CI para rodar `pytest`, `alembic check`, `npm run typecheck`, `npm run build` e `npm audit`.
+- Otimizar bundle frontend com code splitting por rota, principalmente por causa de Recharts e telas autenticadas.
+- Adicionar rate limit nas rotas sensiveis: login, cadastro e assistente.
+- Melhorar observabilidade do backend com logs estruturados sem dados sensiveis.
+- Criar checklist automatizado de pos-deploy para Render, Neon e Vercel.
+
+### Prioridade Media
+
+- Integrar provedor externo de IA atras de service/provider isolado, mantendo `AI_PROVIDER=rules` como fallback.
+- Criar politica de minimizacao de contexto para IA externa, evitando envio de dados brutos quando agregados forem suficientes.
+- Adicionar tela de perfil do usuario com troca de senha.
+- Adicionar recuperacao de senha por email.
+- Criar filtros avancados em transacoes por periodo, conta, categoria, tipo e valor.
+- Adicionar paginacao real nas tabelas do frontend.
+- Melhorar confirmacoes destrutivas com modal proprio no lugar de `window.confirm`.
+- Criar componentes reutilizaveis de formulario, tabela, estado vazio, erro e confirmacao.
+- Adicionar exportacao CSV simples para transacoes.
+- Adicionar seed opcional de categorias padrao por usuario.
+- Criar documentacao de arquitetura separada para backend, frontend, banco, seguranca e IA.
+
+### Prioridade Baixa
+
+- Adicionar temas visuais ou modo escuro.
+- Criar relatorios PDF.
+- Adicionar metas financeiras simples.
+- Adicionar transacoes recorrentes.
+- Adicionar parcelamento basico.
+- Melhorar onboarding inicial do usuario apos cadastro.
+- Adicionar notificacoes internas para orcamentos acima do limite.
+- Criar painel de saude operacional com status de API, banco e ultima migration.
+- Adicionar internacionalizacao futura, mantendo portugues como idioma principal.
+
+### Atualizacoes Tecnicas Recomendadas
+
+- Revisar periodicamente versoes de FastAPI, Starlette, SQLAlchemy, Alembic, Vite, React, TypeScript, TailwindCSS e Recharts.
+- Manter Python 3.12 como versao oficial ate validacao completa de compatibilidade com versoes futuras.
+- Rodar `npm audit --audit-level=moderate` antes de cada deploy frontend.
+- Rodar `python -m alembic check` antes de cada deploy backend.
+- Rodar `python -m pytest` antes de aplicar migrations em producao.
+- Atualizar `.env.example` sempre que uma nova variavel de ambiente for criada.
+- Atualizar este planejamento sempre que uma fase nova for concluida ou uma decisao estrutural mudar.
+
+### Itens Fora Do Escopo Atual
+
+- Open Finance.
+- OCR de comprovantes.
+- App mobile nativo.
+- Assinaturas pagas.
+- Recomendacoes de investimento personalizadas.
+- IA executando acoes financeiras automaticamente.
+- Integracao contabil ou fiscal.

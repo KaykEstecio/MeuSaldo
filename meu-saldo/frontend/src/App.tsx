@@ -6,7 +6,9 @@ import { ProtectedRoute } from "./components/navigation/ProtectedRoute";
 import { LoginPage } from "./features/auth/LoginPage";
 import { RegisterPage } from "./features/auth/RegisterPage";
 import { DashboardPage } from "./features/dashboard/DashboardPage";
+import { AiAssistantPage } from "./features/ai-assistant/AiAssistantPage";
 import { AccountsPage } from "./features/finance/AccountsPage";
+import { BudgetsPage } from "./features/finance/BudgetsPage";
 import { CategoriesPage } from "./features/finance/CategoriesPage";
 import { TransactionsPage } from "./features/finance/TransactionsPage";
 import { SetupStatusPage } from "./features/setup/SetupStatusPage";
@@ -27,6 +29,8 @@ export function App() {
           <Route path={ROUTES.accounts} element={<AccountsPage />} />
           <Route path={ROUTES.categories} element={<CategoriesPage />} />
           <Route path={ROUTES.transactions} element={<TransactionsPage />} />
+          <Route path={ROUTES.budgets} element={<BudgetsPage />} />
+          <Route path={ROUTES.aiAssistant} element={<AiAssistantPage />} />
         </Route>
       </Route>
     </Routes>

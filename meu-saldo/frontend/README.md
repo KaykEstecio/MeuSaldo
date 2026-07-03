@@ -2,7 +2,7 @@
 
 Frontend do MeuSaldo usando React, TypeScript, Vite, TailwindCSS e Recharts.
 
-## Escopo Da Fase 16
+## Escopo Da Fase 18
 
 Esta fase cobre a base tecnica do frontend, as telas de autenticacao, o dashboard financeiro e as telas financeiras operacionais:
 
@@ -23,10 +23,12 @@ Esta fase cobre a base tecnica do frontend, as telas de autenticacao, o dashboar
 - Tela de contas em `/accounts`
 - Tela de categorias em `/categories`
 - Tela de transacoes em `/transactions`
+- Tela de orcamentos em `/budgets`
+- Tela do assistente financeiro em `/ai-assistant`
 - Armazenamento local do JWT
 - Logout
 
-Orcamentos e IA ainda nao foram implementadas no frontend.
+O assistente usa fallback por regras no backend. Integracao com provedor externo de IA ainda nao foi implementada.
 
 ## Como Rodar Localmente
 
@@ -67,4 +69,12 @@ npm run dev
 npm run build
 npm run preview
 npm run typecheck
+```
+
+## Revisao Final
+
+Checklist operacional do MVP:
+
+```txt
+../docs/revisao-final-mvp.md
 ```
