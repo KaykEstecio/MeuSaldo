@@ -14,12 +14,12 @@ type FinanceShellProps = {
 };
 
 const navigationItems = [
-  { label: "Dashboard", to: ROUTES.dashboard },
-  { label: "Contas", to: ROUTES.accounts },
+  { label: "Inicio", to: ROUTES.dashboard },
+  { label: "Contas financeiras", to: ROUTES.accounts },
   { label: "Categorias", to: ROUTES.categories },
-  { label: "Transacoes", to: ROUTES.transactions },
-  { label: "Orcamentos", to: ROUTES.budgets },
-  { label: "Assistente", to: ROUTES.aiAssistant },
+  { label: "Movimentacoes", to: ROUTES.transactions },
+  { label: "Limites de gastos", to: ROUTES.budgets },
+  { label: "Assistente financeiro", to: ROUTES.aiAssistant },
 ];
 
 export function FinanceShell({ children, subtitle, title }: FinanceShellProps) {
@@ -29,7 +29,7 @@ export function FinanceShell({ children, subtitle, title }: FinanceShellProps) {
   const visibleNavigationItems = useMemo(
     () =>
       currentUser?.role === "admin"
-        ? [...navigationItems, { label: "Administracao", to: ROUTES.admin }]
+        ? [...navigationItems, { label: "Area admin", to: ROUTES.admin }]
         : navigationItems,
     [currentUser],
   );

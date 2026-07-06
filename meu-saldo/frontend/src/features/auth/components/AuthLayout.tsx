@@ -30,7 +30,7 @@ export function AuthLayout({ children, title, description }: AuthLayoutProps) {
               Resumo mensal
             </div>
             <p className="mt-4 text-3xl font-semibold text-ink-900">R$ 0,00</p>
-            <p className="mt-2 text-sm text-ink-500">Dados aparecem apos o login.</p>
+            <p className="mt-2 text-sm text-ink-500">Seu resumo aparece depois que voce registrar movimentacoes.</p>
           </div>
 
           <div className="rounded-lg border border-slate-200 bg-slate-50 p-5">
@@ -38,8 +38,8 @@ export function AuthLayout({ children, title, description }: AuthLayoutProps) {
               <ShieldCheck size={18} className="text-brand-700" aria-hidden="true" />
               Conta protegida
             </div>
-            <p className="mt-4 text-3xl font-semibold text-ink-900">JWT</p>
-            <p className="mt-2 text-sm text-ink-500">Sessao autenticada pelo backend.</p>
+            <p className="mt-4 text-3xl font-semibold text-ink-900">Seguro</p>
+            <p className="mt-2 text-sm text-ink-500">Seus dados ficam protegidos na sua conta.</p>
           </div>
         </div>
       </div>

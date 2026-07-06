@@ -1,4 +1,4 @@
-import { FormEvent, useEffect, useState } from "react";
+import { FormEvent, useEffect, useRef, useState } from "react";
 import { Edit3, Loader2, Plus, Trash2, X } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
@@ -31,6 +31,7 @@ export function CategoriesPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState("");
   const [message, setMessage] = useState("");
+  const nameInputRef = useRef<HTMLInputElement | null>(null);
 
   function handleError(caughtError: unknown, fallback: string) {
     if (caughtError instanceof ApiError && caughtError.status === 401) {
@@ -50,7 +51,7 @@ export function CategoriesPage() {
       const response = await listCategories();
       setCategories(response.data);
     } catch (caughtError) {
-      handleError(caughtError, "Nao foi possivel carregar as categorias.");
+      handleError(caughtError, "Nao conseguimos carregar suas categorias. Tente novamente em instantes.");
     } finally {
       setIsLoading(false);
     }
@@ -63,6 +64,11 @@ export function CategoriesPage() {
   function resetForm() {
     setForm(initialForm);
     setEditingCategory(null);
+  }
+
+  function focusNewCategoryForm() {
+    resetForm();
+    nameInputRef.current?.focus();
   }
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
@@ -89,7 +95,7 @@ export function CategoriesPage() {
       resetForm();
       await loadData();
     } catch (caughtError) {
-      handleError(caughtError, "Nao foi possivel salvar a categoria.");
+      handleError(caughtError, "Nao conseguimos salvar a categoria. Verifique os campos e tente novamente.");
     } finally {
       setIsSubmitting(false);
     }
@@ -104,14 +110,14 @@ export function CategoriesPage() {
       setMessage("Categoria removida com sucesso.");
       await loadData();
     } catch (caughtError) {
-      handleError(caughtError, "Nao foi possivel remover a categoria.");
+      handleError(caughtError, "Nao conseguimos remover a categoria. Verifique se ela esta sendo usada em movimentacoes.");
     }
   }
 
   return (
     <FinanceShell
       title="Categorias"
-      subtitle="Organize receitas e despesas para que os relatorios do dashboard sejam consistentes."
+      subtitle="Crie grupos para entender melhor de onde vem e para onde vai seu dinheiro."
     >
       <div className="grid gap-5 lg:grid-cols-[380px_1fr]">
         <section className="min-w-0 rounded-lg border border-slate-200 bg-white p-5 shadow-sm">
@@ -120,7 +126,7 @@ export function CategoriesPage() {
               <h2 className="text-lg font-semibold text-ink-900">
                 {editingCategory ? "Editar categoria" : "Nova categoria"}
               </h2>
-              <p className="mt-1 text-sm text-ink-500">Use nomes claros para melhorar os agrupamentos.</p>
+              <p className="mt-1 text-sm text-ink-500">Exemplos: Salario, Alimentacao, Casa, Transporte.</p>
             </div>
             {editingCategory ? (
               <button
@@ -142,6 +148,8 @@ export function CategoriesPage() {
                 className="mt-2 h-10 w-full rounded-lg border border-slate-300 px-3 text-sm outline-none transition focus:border-brand-600 focus:ring-2 focus:ring-brand-100"
                 minLength={2}
                 maxLength={120}
+                placeholder="Ex.: Alimentacao"
+                ref={nameInputRef}
                 required
                 value={form.name}
                 onChange={(event) => setForm((current) => ({ ...current, name: event.target.value }))}
@@ -149,7 +157,7 @@ export function CategoriesPage() {
             </label>
 
             <label className="block text-sm font-medium text-ink-700" htmlFor="category-type">
-              Tipo
+              Tipo da categoria
               <select
                 id="category-type"
                 className="mt-2 h-10 w-full rounded-lg border border-slate-300 bg-white px-3 text-sm outline-none transition focus:border-brand-600 focus:ring-2 focus:ring-brand-100"
@@ -165,7 +173,7 @@ export function CategoriesPage() {
             </label>
 
             <label className="block text-sm font-medium text-ink-700" htmlFor="category-color">
-              Cor
+              Cor de identificacao
               <input
                 id="category-color"
                 className="mt-2 h-10 w-full rounded-lg border border-slate-300 bg-white px-2 text-sm outline-none transition focus:border-brand-600 focus:ring-2 focus:ring-brand-100"
@@ -176,12 +184,12 @@ export function CategoriesPage() {
             </label>
 
             <label className="block text-sm font-medium text-ink-700" htmlFor="category-icon">
-              Icone
+              Identificador visual
               <input
                 id="category-icon"
                 className="mt-2 h-10 w-full rounded-lg border border-slate-300 px-3 text-sm outline-none transition focus:border-brand-600 focus:ring-2 focus:ring-brand-100"
                 maxLength={60}
-                placeholder="Ex.: cart, home, salary"
+                placeholder="Opcional. Ex.: casa, mercado, salario"
                 value={form.icon}
                 onChange={(event) => setForm((current) => ({ ...current, icon: event.target.value }))}
               />
@@ -193,14 +201,14 @@ export function CategoriesPage() {
               disabled={isSubmitting}
             >
               {isSubmitting ? <Loader2 size={18} className="animate-spin" aria-hidden="true" /> : <Plus size={18} />}
-              {editingCategory ? "Salvar categoria" : "Criar categoria"}
+              {editingCategory ? "Salvar alteracoes" : "Criar categoria"}
             </button>
           </form>
         </section>
 
         <section className="min-w-0 rounded-lg border border-slate-200 bg-white p-5 shadow-sm">
-          <h2 className="text-lg font-semibold text-ink-900">Categorias cadastradas</h2>
-          <p className="mt-1 text-sm text-ink-500">{categories.length} categoria(s) ativa(s)</p>
+          <h2 className="text-lg font-semibold text-ink-900">Suas categorias</h2>
+          <p className="mt-1 text-sm text-ink-500">{categories.length} categoria(s) cadastrada(s)</p>
 
           {error ? <div className="mt-4 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">{error}</div> : null}
           {message ? (
@@ -229,8 +237,21 @@ export function CategoriesPage() {
                   </tr>
                 ) : categories.length === 0 ? (
                   <tr>
-                    <td className="py-6 text-ink-500" colSpan={5}>
-                      Nenhuma categoria cadastrada.
+                    <td className="py-8" colSpan={5}>
+                      <div className="max-w-xl">
+                        <h3 className="text-base font-semibold text-ink-900">Nenhuma categoria ainda</h3>
+                        <p className="mt-2 text-sm leading-6 text-ink-500">
+                          Categorias ajudam a entender para onde seu dinheiro esta indo. Use nomes simples, como
+                          Alimentacao, Casa, Transporte ou Salario.
+                        </p>
+                        <button
+                          type="button"
+                          className="mt-4 rounded-lg bg-brand-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-brand-700"
+                          onClick={focusNewCategoryForm}
+                        >
+                          Criar categoria
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 ) : (

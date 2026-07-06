@@ -1,4 +1,4 @@
-import { FormEvent, useEffect, useMemo, useState } from "react";
+import { FormEvent, useEffect, useMemo, useRef, useState } from "react";
 import { AlertTriangle, Edit3, Loader2, Plus, Trash2, X } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
@@ -48,6 +48,7 @@ export function BudgetsPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState("");
   const [message, setMessage] = useState("");
+  const limitInputRef = useRef<HTMLInputElement | null>(null);
 
   const expenseCategories = useMemo(
     () => categories.filter((category) => category.type === "expense"),
@@ -95,7 +96,7 @@ export function BudgetsPage() {
         category_id: current.category_id || nextExpenseCategories[0]?.id || "",
       }));
     } catch (caughtError) {
-      handleError(caughtError, "Nao foi possivel carregar os orcamentos.");
+      handleError(caughtError, "Nao conseguimos carregar seus limites de gastos. Tente novamente em instantes.");
     } finally {
       setIsLoading(false);
     }
@@ -115,6 +116,11 @@ export function BudgetsPage() {
     });
   }
 
+  function focusNewBudgetForm() {
+    resetForm();
+    limitInputRef.current?.focus();
+  }
+
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setIsSubmitting(true);
@@ -131,24 +137,24 @@ export function BudgetsPage() {
     try {
       if (editingBudget) {
         await updateBudget(editingBudget.id, payload);
-        setMessage("Orcamento atualizado com sucesso.");
+        setMessage("Limite de gasto atualizado com sucesso.");
       } else {
         await createBudget(payload);
-        setMessage("Orcamento criado com sucesso.");
+        setMessage("Limite de gasto criado com sucesso.");
       }
       const nextFilter = { month: form.month, year: form.year };
       setFilter(nextFilter);
       resetForm(nextFilter);
       await loadData(nextFilter);
     } catch (caughtError) {
-      handleError(caughtError, "Nao foi possivel salvar o orcamento.");
+      handleError(caughtError, "Nao conseguimos salvar o limite. Verifique categoria, mes, ano e valor.");
     } finally {
       setIsSubmitting(false);
     }
   }
 
   async function handleDelete(budget: Budget) {
-    const confirmed = window.confirm(`Remover o orcamento de ${budget.category_name}?`);
+    const confirmed = window.confirm(`Remover o limite de gastos de ${budget.category_name}?`);
     if (!confirmed) {
       return;
     }
@@ -158,10 +164,10 @@ export function BudgetsPage() {
 
     try {
       await deleteBudget(budget.id);
-      setMessage("Orcamento removido com sucesso.");
+      setMessage("Limite de gasto removido com sucesso.");
       await loadData();
     } catch (caughtError) {
-      handleError(caughtError, "Nao foi possivel remover o orcamento.");
+      handleError(caughtError, "Nao conseguimos remover o limite de gasto. Tente novamente em instantes.");
     }
   }
 
@@ -178,17 +184,17 @@ export function BudgetsPage() {
 
   return (
     <FinanceShell
-      title="Orcamentos"
-      subtitle="Defina limites mensais por categoria de despesa e acompanhe o consumo do periodo."
+      title="Limites de gastos"
+      subtitle="Defina quanto pretende gastar por categoria em cada mes."
     >
       <div className="grid gap-5 xl:grid-cols-[420px_1fr]">
         <section className="min-w-0 rounded-lg border border-slate-200 bg-white p-5 shadow-sm">
           <div className="flex items-center justify-between gap-3">
             <div>
               <h2 className="text-lg font-semibold text-ink-900">
-                {editingBudget ? "Editar orcamento" : "Novo orcamento"}
+                {editingBudget ? "Editar limite" : "Novo limite de gasto"}
               </h2>
-              <p className="mt-1 text-sm text-ink-500">Use categorias de despesa para criar limites mensais.</p>
+              <p className="mt-1 text-sm text-ink-500">Escolha uma categoria de despesa e informe o valor maximo para o mes.</p>
             </div>
             {editingBudget ? (
               <button
@@ -264,6 +270,8 @@ export function BudgetsPage() {
                 required
                 step="0.01"
                 type="number"
+                placeholder="Ex.: 800.00"
+                ref={limitInputRef}
                 value={form.limit_amount}
                 onChange={(event) => setForm((current) => ({ ...current, limit_amount: event.target.value }))}
               />
@@ -271,7 +279,7 @@ export function BudgetsPage() {
 
             {expenseCategories.length === 0 ? (
               <div className="rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-700">
-                Cadastre uma categoria de despesa antes de criar orcamentos.
+                Cadastre uma categoria de despesa antes de criar limites de gastos.
               </div>
             ) : null}
 
@@ -281,7 +289,7 @@ export function BudgetsPage() {
               disabled={isSubmitting || expenseCategories.length === 0}
             >
               {isSubmitting ? <Loader2 size={18} className="animate-spin" aria-hidden="true" /> : <Plus size={18} />}
-              {editingBudget ? "Salvar orcamento" : "Criar orcamento"}
+              {editingBudget ? "Salvar alteracoes" : "Criar limite de gasto"}
             </button>
           </form>
         </section>
@@ -289,7 +297,7 @@ export function BudgetsPage() {
         <section className="min-w-0 rounded-lg border border-slate-200 bg-white p-5 shadow-sm">
           <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
             <div>
-              <h2 className="text-lg font-semibold text-ink-900">Orcamentos do periodo</h2>
+              <h2 className="text-lg font-semibold text-ink-900">Limites do periodo</h2>
               <p className="mt-1 text-sm text-ink-500">{formatMonthLabel(filter.year, filter.month)}</p>
             </div>
 
@@ -327,7 +335,7 @@ export function BudgetsPage() {
 
           <div className="mt-5 grid gap-3 md:grid-cols-3">
             <div className="rounded-lg border border-slate-200 bg-slate-50 p-4">
-              <p className="text-xs font-semibold uppercase text-ink-500">Limite planejado</p>
+              <p className="text-xs font-semibold uppercase text-ink-500">Valor planejado</p>
               <p className="mt-2 text-xl font-semibold text-ink-900">{formatCurrency(totals.limit)}</p>
             </div>
             <div className="rounded-lg border border-slate-200 bg-slate-50 p-4">
@@ -335,7 +343,7 @@ export function BudgetsPage() {
               <p className="mt-2 text-xl font-semibold text-rose-700">{formatCurrency(totals.spent)}</p>
             </div>
             <div className="rounded-lg border border-slate-200 bg-slate-50 p-4">
-              <p className="text-xs font-semibold uppercase text-ink-500">Saldo do orcamento</p>
+              <p className="text-xs font-semibold uppercase text-ink-500">Ainda disponivel</p>
               <p className={`mt-2 text-xl font-semibold ${totals.remaining < 0 ? "text-rose-700" : "text-emerald-700"}`}>
                 {formatCurrency(totals.remaining)}
               </p>
@@ -365,13 +373,27 @@ export function BudgetsPage() {
                 {isLoading ? (
                   <tr>
                     <td className="py-6 text-ink-500" colSpan={6}>
-                      Carregando orcamentos...
+                      Carregando limites de gastos...
                     </td>
                   </tr>
                 ) : budgets.length === 0 ? (
                   <tr>
-                    <td className="py-6 text-ink-500" colSpan={6}>
-                      Nenhum orcamento cadastrado para este periodo.
+                    <td className="py-8" colSpan={6}>
+                      <div className="max-w-xl">
+                        <h3 className="text-base font-semibold text-ink-900">Nenhum limite de gasto neste periodo</h3>
+                        <p className="mt-2 text-sm leading-6 text-ink-500">
+                          Limites ajudam voce a controlar quanto pretende gastar em cada categoria. Comece escolhendo
+                          uma categoria de despesa e um valor maximo para o mes.
+                        </p>
+                        <button
+                          type="button"
+                          className="mt-4 rounded-lg bg-brand-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-brand-700 disabled:bg-brand-500"
+                          disabled={expenseCategories.length === 0}
+                          onClick={focusNewBudgetForm}
+                        >
+                          Criar primeiro limite
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 ) : (
@@ -420,7 +442,7 @@ export function BudgetsPage() {
                                 year: budget.year,
                               });
                             }}
-                            aria-label={`Editar orcamento ${budget.category_name}`}
+                            aria-label={`Editar limite de gastos ${budget.category_name}`}
                           >
                             <Edit3 size={16} aria-hidden="true" />
                           </button>
@@ -428,7 +450,7 @@ export function BudgetsPage() {
                             type="button"
                             className="flex size-9 items-center justify-center rounded-lg border border-red-200 text-red-600 transition hover:bg-red-50"
                             onClick={() => void handleDelete(budget)}
-                            aria-label={`Remover orcamento ${budget.category_name}`}
+                            aria-label={`Remover limite de gastos ${budget.category_name}`}
                           >
                             <Trash2 size={16} aria-hidden="true" />
                           </button>

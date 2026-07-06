@@ -1,4 +1,4 @@
-import { FormEvent, useEffect, useMemo, useState } from "react";
+import { FormEvent, useEffect, useMemo, useRef, useState } from "react";
 import { Edit3, Loader2, Plus, Trash2, X } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
@@ -47,6 +47,7 @@ export function TransactionsPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState("");
   const [message, setMessage] = useState("");
+  const descriptionInputRef = useRef<HTMLInputElement | null>(null);
 
   const accountsById = useMemo(() => new Map(accounts.map((account) => [account.id, account])), [accounts]);
   const categoriesById = useMemo(() => new Map(categories.map((category) => [category.id, category])), [categories]);
@@ -88,7 +89,7 @@ export function TransactionsPage() {
           "",
       }));
     } catch (caughtError) {
-      handleError(caughtError, "Nao foi possivel carregar as transacoes.");
+      handleError(caughtError, "Nao conseguimos carregar suas movimentacoes. Tente novamente em instantes.");
     } finally {
       setIsLoading(false);
     }
@@ -116,15 +117,15 @@ export function TransactionsPage() {
     try {
       if (editingTransaction) {
         await updateTransaction(editingTransaction.id, form);
-        setMessage("Transacao atualizada com sucesso.");
+        setMessage("Movimentacao atualizada com sucesso.");
       } else {
         await createTransaction(form);
-        setMessage("Transacao criada com sucesso.");
+        setMessage("Movimentacao registrada com sucesso.");
       }
       resetForm();
       await loadData();
     } catch (caughtError) {
-      handleError(caughtError, "Nao foi possivel salvar a transacao.");
+      handleError(caughtError, "Nao conseguimos salvar a movimentacao. Verifique conta, categoria, valor e data.");
     } finally {
       setIsSubmitting(false);
     }
@@ -136,10 +137,10 @@ export function TransactionsPage() {
 
     try {
       await deleteTransaction(transactionId);
-      setMessage("Transacao removida com sucesso.");
+      setMessage("Movimentacao removida com sucesso.");
       await loadData();
     } catch (caughtError) {
-      handleError(caughtError, "Nao foi possivel remover a transacao.");
+      handleError(caughtError, "Nao conseguimos remover a movimentacao. Tente novamente em instantes.");
     }
   }
 
@@ -152,19 +153,30 @@ export function TransactionsPage() {
     }));
   }
 
+  function startNewTransaction(type: TransactionType) {
+    setEditingTransaction(null);
+    setForm({
+      ...initialForm,
+      account_id: accounts[0]?.id || "",
+      category_id: categories.find((category) => category.type === type)?.id || "",
+      type,
+    });
+    window.setTimeout(() => descriptionInputRef.current?.focus(), 0);
+  }
+
   return (
     <FinanceShell
-      title="Transacoes"
-      subtitle="Registre receitas e despesas. O backend recalcula o saldo das contas de forma atomica."
+      title="Movimentacoes"
+      subtitle="Registre entradas e saidas de dinheiro. Cada movimentacao atualiza o saldo da conta escolhida."
     >
       <div className="grid gap-5 xl:grid-cols-[420px_1fr]">
         <section className="min-w-0 rounded-lg border border-slate-200 bg-white p-5 shadow-sm">
           <div className="flex items-center justify-between gap-3">
             <div>
               <h2 className="text-lg font-semibold text-ink-900">
-                {editingTransaction ? "Editar transacao" : "Nova transacao"}
+                {editingTransaction ? "Editar movimentacao" : "Nova movimentacao"}
               </h2>
-              <p className="mt-1 text-sm text-ink-500">Cada movimentacao pertence a uma conta e categoria.</p>
+              <p className="mt-1 text-sm text-ink-500">Escolha se e receita ou despesa, depois informe conta, categoria e valor.</p>
             </div>
             {editingTransaction ? (
               <button
@@ -180,7 +192,7 @@ export function TransactionsPage() {
 
           <form className="mt-5 space-y-4" onSubmit={handleSubmit}>
             <label className="block text-sm font-medium text-ink-700" htmlFor="transaction-type">
-              Tipo
+              Tipo de movimentacao
               <select
                 id="transaction-type"
                 className="mt-2 h-10 w-full rounded-lg border border-slate-300 bg-white px-3 text-sm outline-none transition focus:border-brand-600 focus:ring-2 focus:ring-brand-100"
@@ -196,7 +208,7 @@ export function TransactionsPage() {
             </label>
 
             <label className="block text-sm font-medium text-ink-700" htmlFor="transaction-account">
-              Conta
+              Conta financeira
               <select
                 id="transaction-account"
                 className="mt-2 h-10 w-full rounded-lg border border-slate-300 bg-white px-3 text-sm outline-none transition focus:border-brand-600 focus:ring-2 focus:ring-brand-100"
@@ -214,7 +226,7 @@ export function TransactionsPage() {
             </label>
 
             <label className="block text-sm font-medium text-ink-700" htmlFor="transaction-category">
-              Categoria
+              Categoria da movimentacao
               <select
                 id="transaction-category"
                 className="mt-2 h-10 w-full rounded-lg border border-slate-300 bg-white px-3 text-sm outline-none transition focus:border-brand-600 focus:ring-2 focus:ring-brand-100"
@@ -232,12 +244,14 @@ export function TransactionsPage() {
             </label>
 
             <label className="block text-sm font-medium text-ink-700" htmlFor="transaction-description">
-              Descricao
+              Descricao curta
               <input
                 id="transaction-description"
                 className="mt-2 h-10 w-full rounded-lg border border-slate-300 px-3 text-sm outline-none transition focus:border-brand-600 focus:ring-2 focus:ring-brand-100"
                 maxLength={255}
                 minLength={1}
+                placeholder="Ex.: Mercado, salario, aluguel"
+                ref={descriptionInputRef}
                 required
                 value={form.description}
                 onChange={(event) => setForm((current) => ({ ...current, description: event.target.value }))}
@@ -253,6 +267,7 @@ export function TransactionsPage() {
                   min="0.01"
                   step="0.01"
                   type="number"
+                  placeholder="Ex.: 89.90"
                   required
                   value={form.amount}
                   onChange={(event) => setForm((current) => ({ ...current, amount: event.target.value }))}
@@ -260,7 +275,7 @@ export function TransactionsPage() {
               </label>
 
               <label className="block text-sm font-medium text-ink-700" htmlFor="transaction-date">
-                Data
+                Data da movimentacao
                 <input
                   id="transaction-date"
                   className="mt-2 h-10 w-full rounded-lg border border-slate-300 px-3 text-sm outline-none transition focus:border-brand-600 focus:ring-2 focus:ring-brand-100"
@@ -278,14 +293,14 @@ export function TransactionsPage() {
               disabled={isSubmitting || accounts.length === 0 || availableCategories.length === 0}
             >
               {isSubmitting ? <Loader2 size={18} className="animate-spin" aria-hidden="true" /> : <Plus size={18} />}
-              {editingTransaction ? "Salvar transacao" : "Criar transacao"}
+              {editingTransaction ? "Salvar alteracoes" : "Registrar movimentacao"}
             </button>
           </form>
         </section>
 
         <section className="min-w-0 rounded-lg border border-slate-200 bg-white p-5 shadow-sm">
-          <h2 className="text-lg font-semibold text-ink-900">Transacoes cadastradas</h2>
-          <p className="mt-1 text-sm text-ink-500">{transactions.length} transacao(oes) ativa(s)</p>
+          <h2 className="text-lg font-semibold text-ink-900">Movimentacoes registradas</h2>
+          <p className="mt-1 text-sm text-ink-500">{transactions.length} movimentacao(oes) no historico</p>
 
           {error ? <div className="mt-4 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">{error}</div> : null}
           {message ? (
@@ -311,13 +326,35 @@ export function TransactionsPage() {
                 {isLoading ? (
                   <tr>
                     <td className="py-6 text-ink-500" colSpan={7}>
-                      Carregando transacoes...
+                      Carregando movimentacoes...
                     </td>
                   </tr>
                 ) : transactions.length === 0 ? (
                   <tr>
-                    <td className="py-6 text-ink-500" colSpan={7}>
-                      Nenhuma transacao cadastrada.
+                    <td className="py-8" colSpan={7}>
+                      <div className="max-w-xl">
+                        <h3 className="text-base font-semibold text-ink-900">Nenhuma movimentacao ainda</h3>
+                        <p className="mt-2 text-sm leading-6 text-ink-500">
+                          Movimentacoes sao suas receitas e despesas. Registre uma entrada ou saida para atualizar seus
+                          saldos e montar seu resumo.
+                        </p>
+                        <div className="mt-4 flex flex-col gap-3 sm:flex-row">
+                          <button
+                            type="button"
+                            className="rounded-lg bg-emerald-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-emerald-700"
+                            onClick={() => startNewTransaction("income")}
+                          >
+                            Registrar receita
+                          </button>
+                          <button
+                            type="button"
+                            className="rounded-lg bg-brand-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-brand-700"
+                            onClick={() => startNewTransaction("expense")}
+                          >
+                            Registrar despesa
+                          </button>
+                        </div>
+                      </div>
                     </td>
                   </tr>
                 ) : (
@@ -359,7 +396,7 @@ export function TransactionsPage() {
                                   type: transaction.type,
                                 });
                               }}
-                              aria-label={`Editar transacao ${transaction.description}`}
+                              aria-label={`Editar movimentacao ${transaction.description}`}
                             >
                               <Edit3 size={16} aria-hidden="true" />
                             </button>
@@ -367,7 +404,7 @@ export function TransactionsPage() {
                               type="button"
                               className="flex size-9 items-center justify-center rounded-lg border border-red-200 text-red-600 transition hover:bg-red-50"
                               onClick={() => void handleDelete(transaction.id)}
-                              aria-label={`Remover transacao ${transaction.description}`}
+                              aria-label={`Remover movimentacao ${transaction.description}`}
                             >
                               <Trash2 size={16} aria-hidden="true" />
                             </button>

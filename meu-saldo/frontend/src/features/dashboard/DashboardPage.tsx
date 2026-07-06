@@ -23,7 +23,7 @@ import {
 } from "recharts";
 
 import { ApiError } from "../../api/client";
-import { getCurrentUser, getDashboardSummary } from "../../api/endpoints";
+import { getCurrentUser, getDashboardSummary, listCategories, listTransactions } from "../../api/endpoints";
 import { FinanceShell } from "../../components/layout/FinanceShell";
 import { useAuthToken } from "../../hooks/useAuthToken";
 import { formatCurrency, formatMonthLabel, formatShortDate } from "../../lib/formatters";
@@ -88,11 +88,54 @@ function EmptyChartState({ message }: { message: string }) {
   return <div className="flex h-72 items-center justify-center text-sm text-ink-500">{message}</div>;
 }
 
+type ChecklistItemProps = {
+  actionLabel: string;
+  description: string;
+  done: boolean;
+  onAction: () => void;
+  title: string;
+};
+
+function ChecklistItem({ actionLabel, description, done, onAction, title }: ChecklistItemProps) {
+  return (
+    <li className="flex flex-col gap-3 rounded-lg border border-slate-200 bg-white p-4 sm:flex-row sm:items-center sm:justify-between">
+      <div className="flex gap-3">
+        <span
+          className={`mt-0.5 flex size-6 shrink-0 items-center justify-center rounded-full text-xs font-semibold ${
+            done ? "bg-emerald-100 text-emerald-700" : "bg-slate-100 text-ink-500"
+          }`}
+        >
+          {done ? "OK" : ""}
+        </span>
+        <div>
+          <h4 className="text-sm font-semibold text-ink-900">{title}</h4>
+          <p className="mt-1 text-sm leading-6 text-ink-500">{description}</p>
+        </div>
+      </div>
+
+      <button
+        type="button"
+        className={`shrink-0 rounded-lg px-4 py-2 text-sm font-semibold transition ${
+          done
+            ? "border border-slate-200 bg-white text-ink-500 hover:bg-slate-50"
+            : "bg-brand-600 text-white hover:bg-brand-700"
+        }`}
+        onClick={onAction}
+      >
+        {done ? "Ver" : actionLabel}
+      </button>
+    </li>
+  );
+}
+
 export function DashboardPage() {
   const { clearToken } = useAuthToken();
   const navigate = useNavigate();
   const [user, setUser] = useState<User | null>(null);
   const [summary, setSummary] = useState<DashboardSummary | null>(null);
+  const [categoryCount, setCategoryCount] = useState(0);
+  const [hasIncomeTransaction, setHasIncomeTransaction] = useState(false);
+  const [hasExpenseTransaction, setHasExpenseTransaction] = useState(false);
   const [selectedMonth, setSelectedMonth] = useState(getCurrentMonthInputValue);
   const [periodInput, setPeriodInput] = useState(getCurrentMonthInputValue);
   const [refreshKey, setRefreshKey] = useState(0);
@@ -129,7 +172,7 @@ export function DashboardPage() {
       if (!isValidMonthInput(selectedMonth)) {
         if (isMounted) {
           setSummary(null);
-          setError("Informe um periodo valido.");
+          setError("Escolha um periodo valido para ver seu resumo.");
           setStatus("error");
         }
         return;
@@ -137,14 +180,19 @@ export function DashboardPage() {
 
       try {
         const { year, month } = parseMonthInput(selectedMonth);
-        const [userResponse, summaryResponse] = await Promise.all([
+        const [userResponse, summaryResponse, categoriesResponse, transactionsResponse] = await Promise.all([
           getCurrentUser(),
           getDashboardSummary({ year, month }),
+          listCategories(),
+          listTransactions(),
         ]);
 
         if (isMounted) {
           setUser(userResponse.data);
           setSummary(summaryResponse.data);
+          setCategoryCount(categoriesResponse.data.length);
+          setHasIncomeTransaction(transactionsResponse.data.some((transaction) => transaction.type === "income"));
+          setHasExpenseTransaction(transactionsResponse.data.some((transaction) => transaction.type === "expense"));
           setStatus("idle");
         }
       } catch (caughtError) {
@@ -161,7 +209,7 @@ export function DashboardPage() {
           }
         } else {
           setSummary(null);
-          setError("Nao foi possivel carregar o dashboard.");
+          setError("Nao conseguimos carregar seu resumo. Atualize a pagina ou tente novamente em instantes.");
         }
         setStatus("error");
       }
@@ -182,7 +230,7 @@ export function DashboardPage() {
 
     if (!isValidMonthInput(nextPeriod)) {
       setSummary(null);
-      setError("Informe um periodo valido.");
+      setError("Escolha um periodo valido para ver seu resumo.");
       setStatus("error");
       return;
     }
@@ -193,25 +241,30 @@ export function DashboardPage() {
   }
 
   const periodLabel = summary ? formatMonthLabel(summary.period.year, summary.period.month) : "";
+  const hasAccount = (summary?.active_accounts ?? 0) > 0;
+  const hasCategory = categoryCount > 0;
+  const isFirstUseComplete = hasAccount && hasCategory && hasIncomeTransaction && hasExpenseTransaction;
+  const isDashboardEmpty =
+    Boolean(summary) && summary?.active_accounts === 0 && categoryCount === 0 && summary?.transactions_count === 0;
 
   return (
-    <FinanceShell title="Dashboard financeiro">
+    <FinanceShell title="Inicio">
         <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
           <div>
             <p className="text-sm font-medium text-brand-700">
               {user ? `Ola, ${user.name}` : "Carregando usuario"}
             </p>
             <h2 className="mt-2 text-xl font-semibold text-ink-900">
-              {periodLabel ? `Resumo de ${periodLabel}` : "Resumo do periodo"}
+              {periodLabel ? `Resumo de ${periodLabel}` : "Seu resumo financeiro"}
             </h2>
             <p className="mt-1 text-sm text-ink-500">
-              Dados agregados pelo backend com isolamento por usuario autenticado.
+              Acompanhe saldos, entradas, saidas e principais gastos do mes.
             </p>
           </div>
 
           <form className="flex flex-col gap-3 sm:flex-row sm:items-center" noValidate onSubmit={handlePeriodSubmit}>
             <label className="text-sm font-medium text-ink-700" htmlFor="dashboard-period">
-              Periodo
+              Mes do resumo
             </label>
             <div className="flex items-center gap-2">
               <input
@@ -229,7 +282,7 @@ export function DashboardPage() {
                 type="submit"
                 className="flex size-10 items-center justify-center rounded-lg bg-brand-600 text-white transition hover:bg-brand-700 disabled:bg-brand-500"
                 disabled={status === "loading"}
-                aria-label="Atualizar dashboard"
+                aria-label="Atualizar resumo"
               >
                 {status === "loading" ? (
                   <Loader2 size={18} className="animate-spin" aria-hidden="true" />
@@ -243,6 +296,88 @@ export function DashboardPage() {
 
         {error ? (
           <div className="mt-6 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">{error}</div>
+        ) : null}
+
+        {isDashboardEmpty ? (
+          <section className="mt-6 rounded-lg border border-brand-100 bg-brand-50 p-5">
+            <h3 className="text-lg font-semibold text-ink-900">Seu painel ainda esta vazio</h3>
+            <p className="mt-2 max-w-2xl text-sm leading-6 text-ink-600">
+              Comece criando uma conta financeira. Depois registre uma receita ou despesa para o MeuSaldo montar seu
+              resumo automaticamente.
+            </p>
+            <div className="mt-4 flex flex-col gap-3 sm:flex-row">
+              <button
+                type="button"
+                className="rounded-lg bg-brand-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-brand-700"
+                onClick={() => navigate(ROUTES.accounts)}
+              >
+                Criar conta financeira
+              </button>
+              <button
+                type="button"
+                className="rounded-lg border border-brand-200 bg-white px-4 py-2 text-sm font-semibold text-brand-700 transition hover:bg-brand-50"
+                onClick={() => navigate(ROUTES.transactions)}
+              >
+                Registrar movimentacao
+              </button>
+              <button
+                type="button"
+                className="rounded-lg border border-brand-200 bg-white px-4 py-2 text-sm font-semibold text-brand-700 transition hover:bg-brand-50"
+                onClick={() => navigate(ROUTES.categories)}
+              >
+                Ver categorias
+              </button>
+            </div>
+          </section>
+        ) : null}
+
+        {!isFirstUseComplete && status !== "loading" ? (
+          <section className="mt-6 rounded-lg border border-slate-200 bg-white p-5 shadow-sm">
+            <div>
+              <h3 className="text-lg font-semibold text-ink-900">Comece por aqui</h3>
+              <p className="mt-2 text-sm leading-6 text-ink-500">
+                Complete estes passos para configurar seu MeuSaldo e liberar um resumo financeiro mais util.
+              </p>
+            </div>
+
+            <ol className="mt-5 space-y-3">
+              <ChecklistItem
+                title="Criar primeira conta financeira"
+                description="Informe onde seu dinheiro fica, como banco, carteira ou dinheiro fisico."
+                done={hasAccount}
+                actionLabel="Criar conta"
+                onAction={() => navigate(ROUTES.accounts)}
+              />
+              <ChecklistItem
+                title="Criar ou revisar categorias"
+                description="Use categorias para separar gastos e receitas, como Alimentacao, Casa ou Salario."
+                done={hasCategory}
+                actionLabel="Ver categorias"
+                onAction={() => navigate(ROUTES.categories)}
+              />
+              <ChecklistItem
+                title="Registrar primeira receita"
+                description="Cadastre uma entrada de dinheiro para acompanhar o que voce recebeu."
+                done={hasIncomeTransaction}
+                actionLabel="Registrar receita"
+                onAction={() => navigate(ROUTES.transactions)}
+              />
+              <ChecklistItem
+                title="Registrar primeira despesa"
+                description="Cadastre uma saida de dinheiro para entender seus gastos."
+                done={hasExpenseTransaction}
+                actionLabel="Registrar despesa"
+                onAction={() => navigate(ROUTES.transactions)}
+              />
+              <ChecklistItem
+                title="Conferir o dashboard"
+                description="Depois dos primeiros registros, volte aqui para acompanhar seu resumo do mes."
+                done={isFirstUseComplete}
+                actionLabel="Atualizar resumo"
+                onAction={() => setRefreshKey((current) => current + 1)}
+              />
+            </ol>
+          </section>
         ) : null}
 
         <div className="mt-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
@@ -276,8 +411,8 @@ export function DashboardPage() {
           <section className="rounded-lg border border-slate-200 bg-white p-5 shadow-sm">
             <div className="flex items-center justify-between gap-4">
               <div>
-                <h3 className="text-base font-semibold text-ink-900">Fluxo de caixa diario</h3>
-                <p className="mt-1 text-sm text-ink-500">Receitas, despesas e saldo liquido do periodo.</p>
+                <h3 className="text-base font-semibold text-ink-900">Entradas e saidas por dia</h3>
+                <p className="mt-1 text-sm text-ink-500">Veja como seu dinheiro entrou e saiu durante o mes.</p>
               </div>
               <CalendarDays size={20} className="text-ink-500" aria-hidden="true" />
             </div>
@@ -314,14 +449,14 @@ export function DashboardPage() {
                 </ResponsiveContainer>
               </div>
             ) : (
-              <EmptyChartState message="Nenhuma movimentacao encontrada para o periodo." />
+              <EmptyChartState message="Ainda nao ha movimentacoes neste mes. Registre uma receita ou despesa para ver o grafico." />
             )}
           </section>
 
           <section className="rounded-lg border border-slate-200 bg-white p-5 shadow-sm">
             <div>
-              <h3 className="text-base font-semibold text-ink-900">Despesas por categoria</h3>
-              <p className="mt-1 text-sm text-ink-500">Total de despesas agrupadas pelo backend.</p>
+              <h3 className="text-base font-semibold text-ink-900">Onde voce mais gastou</h3>
+              <p className="mt-1 text-sm text-ink-500">Compare seus gastos por categoria no mes escolhido.</p>
             </div>
 
             {categoryData.length > 0 ? (
@@ -346,7 +481,7 @@ export function DashboardPage() {
                 </ResponsiveContainer>
               </div>
             ) : (
-              <EmptyChartState message="Nenhuma despesa categorizada neste periodo." />
+              <EmptyChartState message="Ainda nao ha despesas com categoria neste mes. Cadastre uma despesa para acompanhar seus gastos." />
             )}
           </section>
         </div>
@@ -355,13 +490,13 @@ export function DashboardPage() {
           <section className="rounded-lg border border-slate-200 bg-white p-5 shadow-sm">
             <h3 className="text-base font-semibold text-ink-900">Contas ativas</h3>
             <p className="mt-3 text-3xl font-semibold text-ink-900">{summary?.active_accounts ?? 0}</p>
-            <p className="mt-2 text-sm text-ink-500">Contas ativas consideradas no saldo total.</p>
+            <p className="mt-2 text-sm text-ink-500">Contas que entram no calculo do seu saldo.</p>
           </section>
 
           <section className="rounded-lg border border-slate-200 bg-white p-5 shadow-sm">
-            <h3 className="text-base font-semibold text-ink-900">Transacoes no periodo</h3>
+            <h3 className="text-base font-semibold text-ink-900">Movimentacoes no mes</h3>
             <p className="mt-3 text-3xl font-semibold text-ink-900">{summary?.transactions_count ?? 0}</p>
-            <p className="mt-2 text-sm text-ink-500">Movimentacoes ativas consideradas no resumo mensal.</p>
+            <p className="mt-2 text-sm text-ink-500">Receitas e despesas registradas no periodo.</p>
           </section>
         </div>
     </FinanceShell>

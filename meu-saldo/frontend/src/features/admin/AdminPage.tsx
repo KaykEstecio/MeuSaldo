@@ -77,7 +77,7 @@ export function AdminPage() {
         if (caughtError instanceof ApiError) {
           setError(caughtError.status === 403 ? "Acesso administrativo restrito." : caughtError.message);
         } else {
-          setError("Nao foi possivel carregar o painel administrativo.");
+          setError("Nao conseguimos carregar a area admin. Tente novamente em instantes.");
         }
         setStatus("error");
       }
@@ -113,7 +113,7 @@ export function AdminPage() {
       if (caughtError instanceof ApiError) {
         setError(caughtError.message);
       } else {
-        setError("Nao foi possivel atualizar o usuario.");
+        setError("Nao conseguimos atualizar este usuario. Verifique a acao e tente novamente.");
       }
     } finally {
       setIsActionSubmitting(false);
@@ -122,8 +122,8 @@ export function AdminPage() {
 
   return (
     <FinanceShell
-      title="Administracao"
-      subtitle="Visao operacional com usuarios cadastrados e metricas gerais do MeuSaldo."
+      title="Area admin"
+      subtitle="Gerencie usuarios e acompanhe informacoes gerais do sistema."
     >
       <div className="space-y-6">
         <div className="flex items-center gap-3 rounded-lg border border-brand-100 bg-brand-50 p-4 text-brand-800">
@@ -146,7 +146,7 @@ export function AdminPage() {
           <div className="flex items-center justify-between gap-4 border-b border-slate-200 px-5 py-4">
             <div>
               <h2 className="text-lg font-semibold text-ink-900">Usuarios</h2>
-              <p className="mt-1 text-sm text-ink-500">Dados minimos de cadastro e auditoria de login.</p>
+              <p className="mt-1 text-sm text-ink-500">Veja usuarios cadastrados e controle acessos quando necessario.</p>
             </div>
             {status === "loading" ? <Loader2 className="animate-spin text-brand-700" size={20} aria-hidden="true" /> : null}
           </div>
@@ -235,7 +235,7 @@ export function AdminPage() {
             <section className="w-full max-w-md rounded-lg bg-white p-6 shadow-soft">
               <h2 className="text-lg font-semibold text-ink-900">{actionLabels[pendingAction.action]}</h2>
               <p className="mt-3 text-sm leading-6 text-ink-500">
-                Confirmar alteracao para {pendingAction.user.name} ({pendingAction.user.email})?
+                Confirmar esta alteracao para {pendingAction.user.name} ({pendingAction.user.email})?
               </p>
               <div className="mt-6 flex justify-end gap-3">
                 <button

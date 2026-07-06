@@ -13,12 +13,12 @@ const setupItems = [
   },
   {
     title: "Dados",
-    description: "API configurada",
+    description: "Tudo pronto para comecar",
     icon: Database,
   },
   {
     title: "Graficos",
-    description: "Pronto para metricas",
+    description: "Resumo visual do seu mes",
     icon: LineChart,
   },
 ];
@@ -32,7 +32,7 @@ export function SetupStatusPage() {
           Seu dinheiro organizado em um so lugar
         </h1>
         <p className="mt-5 max-w-2xl text-base leading-7 text-ink-500">
-          Acompanhe contas, categorias, transacoes e orcamentos com uma experiencia simples e segura.
+          Acompanhe contas, categorias, movimentacoes e limites de gastos com uma experiencia simples e segura.
         </p>
       </div>
 

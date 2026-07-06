@@ -30,7 +30,7 @@ export function AuthenticatedStartPage() {
         if (caughtError instanceof ApiError) {
           setError(caughtError.message);
         } else {
-          setError("Nao foi possivel carregar a sessao.");
+          setError("Nao conseguimos carregar sua sessao. Entre novamente se o problema continuar.");
         }
       });
 
@@ -48,7 +48,7 @@ export function AuthenticatedStartPage() {
           </span>
           <div>
             <h1 className="text-2xl font-semibold text-ink-900">Sessao iniciada</h1>
-            <p className="mt-1 text-sm text-ink-500">As telas financeiras entram nas proximas fases.</p>
+            <p className="mt-1 text-sm text-ink-500">Sua conta esta pronta para usar.</p>
           </div>
         </div>
 

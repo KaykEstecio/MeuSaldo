@@ -38,7 +38,7 @@ export function LoginPage() {
       if (caughtError instanceof ApiError) {
         setError(caughtError.message);
       } else {
-        setError("Nao foi possivel entrar agora.");
+        setError("Nao conseguimos entrar agora. Verifique seus dados e tente novamente.");
       }
     } finally {
       setIsSubmitting(false);
@@ -48,12 +48,12 @@ export function LoginPage() {
   return (
     <AuthLayout
       title="Acesse seu painel financeiro"
-      description="Entre para acompanhar saldos, transacoes, categorias, orcamentos e os resumos do MeuSaldo."
+      description="Entre para acompanhar seu saldo, suas movimentacoes e seus limites de gastos."
     >
       <div className="rounded-lg border border-slate-200 bg-white p-6 shadow-soft">
         <div>
           <h2 className="text-2xl font-semibold text-ink-900">Entrar</h2>
-          <p className="mt-2 text-sm leading-6 text-ink-500">Use o email e a senha cadastrados no MeuSaldo.</p>
+          <p className="mt-2 text-sm leading-6 text-ink-500">Use o email e a senha da sua conta.</p>
         </div>
 
         <form className="mt-6 space-y-4" onSubmit={handleSubmit}>

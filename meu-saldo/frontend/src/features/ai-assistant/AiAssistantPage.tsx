@@ -11,7 +11,7 @@ import type { AiMessage } from "../../types/api";
 
 const suggestionPrompts = [
   "Como posso economizar este mes?",
-  "Analise meus orcamentos atuais.",
+  "Analise meus limites de gastos.",
   "Qual categoria merece mais atencao?",
 ];
 
@@ -49,7 +49,7 @@ export function AiAssistantPage() {
       const response = await listAiMessages();
       setMessages(response.data);
     } catch (caughtError) {
-      handleError(caughtError, "Nao foi possivel carregar o historico do assistente.");
+      handleError(caughtError, "Nao conseguimos carregar a conversa do assistente. Tente novamente em instantes.");
     } finally {
       setIsLoading(false);
     }
@@ -74,7 +74,7 @@ export function AiAssistantPage() {
       setMessages((current) => [response.data.assistant_message, response.data.user_message, ...current]);
       setPrompt("");
     } catch (caughtError) {
-      handleError(caughtError, "Nao foi possivel gerar a resposta agora.");
+      handleError(caughtError, "Nao conseguimos gerar uma resposta agora. Tente reformular a pergunta.");
     } finally {
       setIsSubmitting(false);
     }
@@ -87,18 +87,17 @@ export function AiAssistantPage() {
 
   return (
     <FinanceShell
-      title="Assistente"
-      subtitle="Receba analises financeiras baseadas em dados agregados do seu MeuSaldo."
+      title="Assistente financeiro"
+      subtitle="Faca perguntas sobre seus gastos, limites e proximos passos financeiros."
     >
       <div className="grid gap-5 xl:grid-cols-[360px_1fr]">
         <aside className="rounded-lg border border-slate-200 bg-white p-5 shadow-sm">
           <div className="flex size-11 items-center justify-center rounded-lg bg-brand-50 text-brand-700">
             <Sparkles size={22} aria-hidden="true" />
           </div>
-          <h2 className="mt-4 text-lg font-semibold text-ink-900">Fallback por regras</h2>
+          <h2 className="mt-4 text-lg font-semibold text-ink-900">Orientacao segura</h2>
           <p className="mt-2 text-sm leading-6 text-ink-500">
-            Nesta fase, o assistente usa regras locais e dados agregados. Ele nao envia seus dados para provedor externo
-            e nao executa acoes financeiras.
+            O assistente analisa seu resumo financeiro dentro do MeuSaldo. Ele nao altera seus dados e nao faz operacoes por voce.
           </p>
 
           <div className="mt-5 space-y-2">
@@ -123,7 +122,7 @@ export function AiAssistantPage() {
           <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
             <div>
               <h2 className="text-lg font-semibold text-ink-900">Conversa financeira</h2>
-              <p className="mt-1 text-sm text-ink-500">Pergunte sobre gastos, orcamentos e proximos passos.</p>
+              <p className="mt-1 text-sm text-ink-500">Pergunte sobre gastos, limites mensais e formas de se organizar.</p>
             </div>
           </div>
 
@@ -138,11 +137,18 @@ export function AiAssistantPage() {
             {isLoading ? (
               <div className="flex h-72 items-center justify-center gap-2 text-sm text-ink-500">
                 <Loader2 size={18} className="animate-spin" aria-hidden="true" />
-                Carregando historico...
+                Carregando conversa...
               </div>
             ) : orderedMessages.length === 0 ? (
-              <div className="flex h-72 items-center justify-center text-center text-sm leading-6 text-ink-500">
-                Nenhuma mensagem ainda. Use uma sugestao ou escreva sua pergunta.
+              <div className="flex h-72 items-center justify-center text-center">
+                <div className="max-w-md">
+                  <h3 className="text-base font-semibold text-ink-900">Comece uma conversa financeira</h3>
+                  <p className="mt-2 text-sm leading-6 text-ink-500">
+                    O assistente usa seus dados para gerar analises. Cadastre algumas movimentacoes para receber
+                    insights melhores.
+                  </p>
+                  <p className="mt-3 text-sm text-ink-500">Voce tambem pode escolher uma sugestao ao lado.</p>
+                </div>
               </div>
             ) : (
               orderedMessages.map((message) => {
@@ -165,7 +171,7 @@ export function AiAssistantPage() {
                       }`}
                     >
                       <p>{message.content}</p>
-                      {isAssistant ? <p className="mt-2 text-xs text-ink-400">Fonte: regras do MeuSaldo</p> : null}
+                      {isAssistant ? <p className="mt-2 text-xs text-ink-400">Resposta gerada pelo MeuSaldo</p> : null}
                     </div>
                   </article>
                 );

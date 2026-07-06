@@ -1,4 +1,4 @@
-import { FormEvent, useEffect, useState } from "react";
+import { FormEvent, useEffect, useRef, useState } from "react";
 import { Edit3, Loader2, Plus, Trash2, X } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
@@ -31,6 +31,7 @@ export function AccountsPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState("");
   const [message, setMessage] = useState("");
+  const nameInputRef = useRef<HTMLInputElement | null>(null);
 
   function handleError(caughtError: unknown, fallback: string) {
     if (caughtError instanceof ApiError && caughtError.status === 401) {
@@ -50,7 +51,7 @@ export function AccountsPage() {
       const response = await listAccounts();
       setAccounts(response.data);
     } catch (caughtError) {
-      handleError(caughtError, "Nao foi possivel carregar as contas.");
+      handleError(caughtError, "Nao conseguimos carregar suas contas. Tente novamente em instantes.");
     } finally {
       setIsLoading(false);
     }
@@ -63,6 +64,11 @@ export function AccountsPage() {
   function resetForm() {
     setForm(initialForm);
     setEditingAccount(null);
+  }
+
+  function focusNewAccountForm() {
+    resetForm();
+    nameInputRef.current?.focus();
   }
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
@@ -85,7 +91,7 @@ export function AccountsPage() {
       resetForm();
       await loadData();
     } catch (caughtError) {
-      handleError(caughtError, "Nao foi possivel salvar a conta.");
+      handleError(caughtError, "Nao conseguimos salvar a conta. Verifique os campos e tente novamente.");
     } finally {
       setIsSubmitting(false);
     }
@@ -100,14 +106,14 @@ export function AccountsPage() {
       setMessage("Conta removida com sucesso.");
       await loadData();
     } catch (caughtError) {
-      handleError(caughtError, "Nao foi possivel remover a conta.");
+      handleError(caughtError, "Nao conseguimos remover a conta. Verifique se ela ainda possui movimentacoes vinculadas.");
     }
   }
 
   return (
     <FinanceShell
-      title="Contas"
-      subtitle="Cadastre contas financeiras e acompanhe o saldo atual calculado pelas transacoes."
+      title="Contas financeiras"
+      subtitle="Cadastre onde seu dinheiro fica, como banco, carteira, poupanca ou cartao."
     >
       <div className="grid gap-5 lg:grid-cols-[380px_1fr]">
         <section className="min-w-0 rounded-lg border border-slate-200 bg-white p-5 shadow-sm">
@@ -116,7 +122,7 @@ export function AccountsPage() {
               <h2 className="text-lg font-semibold text-ink-900">
                 {editingAccount ? "Editar conta" : "Nova conta"}
               </h2>
-              <p className="mt-1 text-sm text-ink-500">O saldo inicial so e definido na criacao.</p>
+              <p className="mt-1 text-sm text-ink-500">Comece criando a conta que voce usa no dia a dia.</p>
             </div>
             {editingAccount ? (
               <button
@@ -138,6 +144,8 @@ export function AccountsPage() {
                 className="mt-2 h-10 w-full rounded-lg border border-slate-300 px-3 text-sm outline-none transition focus:border-brand-600 focus:ring-2 focus:ring-brand-100"
                 minLength={2}
                 maxLength={120}
+                placeholder="Ex.: Nubank, Carteira, Poupanca"
+                ref={nameInputRef}
                 required
                 value={form.name}
                 onChange={(event) => setForm((current) => ({ ...current, name: event.target.value }))}
@@ -145,7 +153,7 @@ export function AccountsPage() {
             </label>
 
             <label className="block text-sm font-medium text-ink-700" htmlFor="account-type">
-              Tipo
+              Tipo de conta
               <select
                 id="account-type"
                 className="mt-2 h-10 w-full rounded-lg border border-slate-300 bg-white px-3 text-sm outline-none transition focus:border-brand-600 focus:ring-2 focus:ring-brand-100"
@@ -161,13 +169,14 @@ export function AccountsPage() {
             </label>
 
             <label className="block text-sm font-medium text-ink-700" htmlFor="account-initial-balance">
-              Saldo inicial
+              Saldo inicial da conta
               <input
                 id="account-initial-balance"
                 className="mt-2 h-10 w-full rounded-lg border border-slate-300 px-3 text-sm outline-none transition focus:border-brand-600 focus:ring-2 focus:ring-brand-100 disabled:bg-slate-100 disabled:text-ink-500"
                 min="0"
                 step="0.01"
                 type="number"
+                placeholder="Ex.: 250.00"
                 required={!editingAccount}
                 disabled={Boolean(editingAccount)}
                 value={form.initial_balance}
@@ -183,7 +192,7 @@ export function AccountsPage() {
               disabled={isSubmitting}
             >
               {isSubmitting ? <Loader2 size={18} className="animate-spin" aria-hidden="true" /> : <Plus size={18} />}
-              {editingAccount ? "Salvar conta" : "Criar conta"}
+              {editingAccount ? "Salvar alteracoes" : "Criar conta financeira"}
             </button>
           </form>
         </section>
@@ -191,8 +200,8 @@ export function AccountsPage() {
         <section className="min-w-0 rounded-lg border border-slate-200 bg-white p-5 shadow-sm">
           <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
             <div>
-              <h2 className="text-lg font-semibold text-ink-900">Contas cadastradas</h2>
-              <p className="mt-1 text-sm text-ink-500">{accounts.length} conta(s) ativa(s)</p>
+              <h2 className="text-lg font-semibold text-ink-900">Suas contas financeiras</h2>
+              <p className="mt-1 text-sm text-ink-500">{accounts.length} conta(s) cadastrada(s)</p>
             </div>
           </div>
 
@@ -223,8 +232,21 @@ export function AccountsPage() {
                   </tr>
                 ) : accounts.length === 0 ? (
                   <tr>
-                    <td className="py-6 text-ink-500" colSpan={5}>
-                      Nenhuma conta cadastrada.
+                    <td className="py-8" colSpan={5}>
+                      <div className="max-w-xl">
+                        <h3 className="text-base font-semibold text-ink-900">Nenhuma conta financeira ainda</h3>
+                        <p className="mt-2 text-sm leading-6 text-ink-500">
+                          Contas financeiras sao os lugares onde seu dinheiro fica, como banco, carteira, cartao ou
+                          dinheiro fisico.
+                        </p>
+                        <button
+                          type="button"
+                          className="mt-4 rounded-lg bg-brand-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-brand-700"
+                          onClick={focusNewAccountForm}
+                        >
+                          Criar primeira conta
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 ) : (
