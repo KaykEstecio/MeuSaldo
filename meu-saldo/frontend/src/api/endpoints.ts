@@ -57,6 +57,24 @@ export function listAdminUsers() {
   return apiRequest<ListResponse<AdminUser>>("/admin/users?page=1&page_size=100");
 }
 
+export type AdminUserUpdatePayload = {
+  role?: "user" | "admin";
+  is_active?: boolean;
+};
+
+export function updateAdminUser(userId: string, payload: AdminUserUpdatePayload) {
+  return apiRequest<ApiResponse<AdminUser>>(`/admin/users/${userId}`, {
+    method: "PATCH",
+    body: payload,
+  });
+}
+
+export function deactivateAdminUser(userId: string) {
+  return apiRequest<ApiResponse<AdminUser>>(`/admin/users/${userId}`, {
+    method: "DELETE",
+  });
+}
+
 export type DashboardSummaryParams = {
   year?: number;
   month?: number;

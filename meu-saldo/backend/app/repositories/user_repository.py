@@ -40,3 +40,20 @@ def count_users_created_since(db: Session, created_since: datetime) -> int:
 def list_users(db: Session, page: int, page_size: int) -> list[User]:
     offset = (page - 1) * page_size
     return list(db.scalars(select(User).order_by(User.created_at.desc()).offset(offset).limit(page_size)))
+
+
+def update_user_admin_fields(
+    db: Session,
+    user: User,
+    role: str | None = None,
+    is_active: bool | None = None,
+) -> User:
+    if role is not None:
+        user.role = role
+
+    if is_active is not None:
+        user.is_active = is_active
+
+    db.commit()
+    db.refresh(user)
+    return user

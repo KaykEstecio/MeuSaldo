@@ -155,6 +155,8 @@ export type AdminUser = {
   id: string;
   name: string;
   email: string;
+  role: "user" | "admin";
+  is_active: boolean;
   created_at: string;
   last_login_at: string | null;
 };

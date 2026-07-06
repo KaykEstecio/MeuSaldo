@@ -819,8 +819,9 @@ Ordem recomendada de implementacao:
 6. Implementar listagem de usuarios com dados minimos: `id`, `name`, `email` e `created_at`.
 7. Criar rota frontend `/admin` protegida por autenticacao e permissao de admin.
 8. Adicionar bloqueio visual e redirecionamento para usuarios comuns.
-9. Criar testes de backend para garantir que usuarios comuns recebam `403 Forbidden`.
-10. Criar testes frontend para validar que usuario comum nao visualiza o painel admin.
+9. Adicionar controle administrativo de usuarios com bloqueio/desbloqueio por `is_active` e alteracao controlada de `role`.
+10. Criar testes de backend para garantir que usuarios comuns recebam `403 Forbidden`.
+11. Criar testes frontend para validar que usuario comum nao visualiza o painel admin.
 
 Regras obrigatorias:
 
@@ -830,6 +831,8 @@ Regras obrigatorias:
 - O painel admin nao deve exibir saldos, transacoes, categorias, contas ou dados financeiros individuais de outros usuarios.
 - Metricas administrativas devem ser agregadas e nao devem quebrar isolamento financeiro por usuario.
 - Logs de auditoria devem registrar horario do ultimo login sem salvar senha, token JWT ou dados sensiveis.
+- Exclusao administrativa de usuarios deve ser bloqueio logico com `is_active=false`, preservando historico financeiro.
+- Administrador nao deve conseguir bloquear a propria conta nem remover a propria permissao de admin pela interface.
 - A role `admin` nao deve ser atribuida por rota publica de cadastro.
 - A criacao do primeiro admin deve ser feita por seed, script controlado ou ajuste manual seguro no banco.
 
