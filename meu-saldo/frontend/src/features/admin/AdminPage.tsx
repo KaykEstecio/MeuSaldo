@@ -151,7 +151,7 @@ export function AdminPage() {
             {status === "loading" ? <Loader2 className="animate-spin text-brand-700" size={20} aria-hidden="true" /> : null}
           </div>
 
-          <div className="overflow-x-auto">
+          <div className="overflow-x-auto rounded-b-lg">
             <table className="min-w-full divide-y divide-slate-200 text-left text-sm">
               <thead className="bg-slate-50 text-xs font-semibold uppercase text-ink-500">
                 <tr>

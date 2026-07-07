@@ -26,6 +26,7 @@ import { ApiError } from "../../api/client";
 import { getCurrentUser, getDashboardSummary, listCategories, listTransactions } from "../../api/endpoints";
 import { FinanceShell } from "../../components/layout/FinanceShell";
 import { useAuthToken } from "../../hooks/useAuthToken";
+import { useTheme } from "../../hooks/useTheme";
 import { formatCurrency, formatMonthLabel, formatShortDate } from "../../lib/formatters";
 import { ROUTES } from "../../lib/routes";
 import type { DashboardSummary, User } from "../../types/api";
@@ -130,6 +131,7 @@ function ChecklistItem({ actionLabel, description, done, onAction, title }: Chec
 
 export function DashboardPage() {
   const { clearToken } = useAuthToken();
+  const { isDark } = useTheme();
   const navigate = useNavigate();
   const [user, setUser] = useState<User | null>(null);
   const [summary, setSummary] = useState<DashboardSummary | null>(null);
@@ -160,6 +162,21 @@ export function DashboardPage() {
         amount: Number(category.amount),
       })) ?? [],
     [summary],
+  );
+
+  const chartColors = useMemo(
+    () => ({
+      axis: isDark ? "#cbd5e1" : "#6b7280",
+      grid: isDark ? "#334155" : "#e2e8f0",
+      netFill: isDark ? "rgba(148, 163, 184, 0.18)" : "#e2e8f0",
+      netStroke: isDark ? "#94a3b8" : "#475569",
+      incomeFill: isDark ? "rgba(5, 150, 105, 0.22)" : "#d1fae5",
+      expenseFill: isDark ? "rgba(225, 29, 72, 0.2)" : "#ffe4e6",
+      tooltipBackground: isDark ? "#0f172a" : "#ffffff",
+      tooltipBorder: isDark ? "#334155" : "#e2e8f0",
+      tooltipText: isDark ? "#f8fafc" : "#111827",
+    }),
+    [isDark],
   );
 
   useEffect(() => {
@@ -316,7 +333,7 @@ export function DashboardPage() {
               <button
                 type="button"
                 className="rounded-lg border border-brand-200 bg-white px-4 py-2 text-sm font-semibold text-brand-700 transition hover:bg-brand-50"
-                onClick={() => navigate(ROUTES.transactions)}
+                onClick={() => navigate(`${ROUTES.transactions}?type=expense`)}
               >
                 Registrar movimentacao
               </button>
@@ -360,14 +377,14 @@ export function DashboardPage() {
                 description="Cadastre uma entrada de dinheiro para acompanhar o que voce recebeu."
                 done={hasIncomeTransaction}
                 actionLabel="Registrar receita"
-                onAction={() => navigate(ROUTES.transactions)}
+                onAction={() => navigate(`${ROUTES.transactions}?type=income`)}
               />
               <ChecklistItem
                 title="Registrar primeira despesa"
                 description="Cadastre uma saida de dinheiro para entender seus gastos."
                 done={hasExpenseTransaction}
                 actionLabel="Registrar despesa"
-                onAction={() => navigate(ROUTES.transactions)}
+                onAction={() => navigate(`${ROUTES.transactions}?type=expense`)}
               />
               <ChecklistItem
                 title="Conferir o dashboard"
@@ -421,30 +438,45 @@ export function DashboardPage() {
               <div className="mt-5 h-80">
                 <ResponsiveContainer width="100%" height="100%">
                   <AreaChart data={cashflowData} margin={{ left: 0, right: 8, top: 8, bottom: 0 }}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
-                    <XAxis dataKey="date" tick={{ fill: "#6b7280", fontSize: 12 }} tickLine={false} />
+                    <CartesianGrid strokeDasharray="3 3" stroke={chartColors.grid} />
+                    <XAxis dataKey="date" tick={{ fill: chartColors.axis, fontSize: 12 }} tickLine={false} />
                     <YAxis
-                      tick={{ fill: "#6b7280", fontSize: 12 }}
+                      tick={{ fill: chartColors.axis, fontSize: 12 }}
                       tickFormatter={(value) => formatCurrency(Number(value))}
                       width={92}
                     />
-                    <Tooltip formatter={(value) => formatCurrency(Number(value))} />
+                    <Tooltip
+                      contentStyle={{
+                        backgroundColor: chartColors.tooltipBackground,
+                        borderColor: chartColors.tooltipBorder,
+                        color: chartColors.tooltipText,
+                      }}
+                      itemStyle={{ color: chartColors.tooltipText }}
+                      labelStyle={{ color: chartColors.tooltipText }}
+                      formatter={(value) => formatCurrency(Number(value))}
+                    />
                     <Legend />
                     <Area
                       type="monotone"
                       dataKey="income"
                       name="Receitas"
                       stroke="#059669"
-                      fill="#d1fae5"
+                      fill={chartColors.incomeFill}
                     />
                     <Area
                       type="monotone"
                       dataKey="expense"
                       name="Despesas"
                       stroke="#e11d48"
-                      fill="#ffe4e6"
+                      fill={chartColors.expenseFill}
                     />
-                    <Area type="monotone" dataKey="net" name="Liquido" stroke="#475569" fill="#e2e8f0" />
+                    <Area
+                      type="monotone"
+                      dataKey="net"
+                      name="Liquido"
+                      stroke={chartColors.netStroke}
+                      fill={chartColors.netFill}
+                    />
                   </AreaChart>
                 </ResponsiveContainer>
               </div>
@@ -463,19 +495,28 @@ export function DashboardPage() {
               <div className="mt-5 h-80">
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart data={categoryData} layout="vertical" margin={{ left: 24, right: 8, top: 8, bottom: 0 }}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
+                    <CartesianGrid strokeDasharray="3 3" stroke={chartColors.grid} />
                     <XAxis
                       type="number"
-                      tick={{ fill: "#6b7280", fontSize: 12 }}
+                      tick={{ fill: chartColors.axis, fontSize: 12 }}
                       tickFormatter={(value) => formatCurrency(Number(value))}
                     />
                     <YAxis
                       dataKey="name"
                       type="category"
-                      tick={{ fill: "#6b7280", fontSize: 12 }}
+                      tick={{ fill: chartColors.axis, fontSize: 12 }}
                       width={96}
                     />
-                    <Tooltip formatter={(value) => formatCurrency(Number(value))} />
+                    <Tooltip
+                      contentStyle={{
+                        backgroundColor: chartColors.tooltipBackground,
+                        borderColor: chartColors.tooltipBorder,
+                        color: chartColors.tooltipText,
+                      }}
+                      itemStyle={{ color: chartColors.tooltipText }}
+                      labelStyle={{ color: chartColors.tooltipText }}
+                      formatter={(value) => formatCurrency(Number(value))}
+                    />
                     <Bar dataKey="amount" name="Despesas" fill="#e11d48" radius={[0, 6, 6, 0]} />
                   </BarChart>
                 </ResponsiveContainer>

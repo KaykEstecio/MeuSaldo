@@ -1,6 +1,6 @@
 import { FormEvent, useEffect, useMemo, useRef, useState } from "react";
 import { Edit3, Loader2, Plus, Trash2, X } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 
 import { ApiError } from "../../api/client";
 import {
@@ -13,7 +13,7 @@ import {
 } from "../../api/endpoints";
 import { FinanceShell } from "../../components/layout/FinanceShell";
 import { useAuthToken } from "../../hooks/useAuthToken";
-import { categoryTypeLabels, transactionTypeLabels } from "../../lib/financeLabels";
+import { categoryTypeLabels } from "../../lib/financeLabels";
 import { formatCurrency, formatShortDate } from "../../lib/formatters";
 import { ROUTES } from "../../lib/routes";
 import type { Account, Category, Transaction, TransactionType } from "../../types/api";
@@ -38,6 +38,10 @@ function getErrorMessage(error: unknown, fallback: string) {
 export function TransactionsPage() {
   const { clearToken } = useAuthToken();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const requestedType = searchParams.get("type");
+  const initialRequestedType: TransactionType =
+    requestedType === "income" || requestedType === "expense" ? requestedType : "expense";
   const [accounts, setAccounts] = useState<Account[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [transactions, setTransactions] = useState<Transaction[]>([]);
@@ -66,7 +70,7 @@ export function TransactionsPage() {
     setError(getErrorMessage(caughtError, fallback));
   }
 
-  async function loadData() {
+  async function loadData(preferredType: TransactionType = initialRequestedType) {
     setIsLoading(true);
     setError("");
 
@@ -80,14 +84,21 @@ export function TransactionsPage() {
       setCategories(categoriesResponse.data);
       setTransactions(transactionsResponse.data);
 
-      setForm((current) => ({
-        ...current,
-        account_id: current.account_id || accountsResponse.data[0]?.id || "",
-        category_id:
-          current.category_id ||
-          categoriesResponse.data.find((category) => category.type === current.type)?.id ||
-          "",
-      }));
+      setForm((current) => {
+        const categoryForRequestedType =
+          categoriesResponse.data.find(
+            (category) => category.id === current.category_id && category.type === preferredType,
+          )?.id ||
+          categoriesResponse.data.find((category) => category.type === preferredType)?.id ||
+          "";
+
+        return {
+          ...current,
+          account_id: current.account_id || accountsResponse.data[0]?.id || "",
+          category_id: categoryForRequestedType,
+          type: preferredType,
+        };
+      });
     } catch (caughtError) {
       handleError(caughtError, "Nao conseguimos carregar suas movimentacoes. Tente novamente em instantes.");
     } finally {
@@ -97,14 +108,15 @@ export function TransactionsPage() {
 
   useEffect(() => {
     void loadData();
-  }, []);
+  }, [initialRequestedType]);
 
-  function resetForm() {
+  function resetForm(type: TransactionType = initialForm.type) {
     setEditingTransaction(null);
     setForm({
       ...initialForm,
       account_id: accounts[0]?.id || "",
-      category_id: categories.find((category) => category.type === initialForm.type)?.id || "",
+      category_id: categories.find((category) => category.type === type)?.id || "",
+      type,
     });
   }
 
@@ -120,10 +132,10 @@ export function TransactionsPage() {
         setMessage("Movimentacao atualizada com sucesso.");
       } else {
         await createTransaction(form);
-        setMessage("Movimentacao registrada com sucesso.");
+        setMessage("Movimentacao registrada com sucesso. Voce pode registrar outra ou voltar ao Inicio para ver o resumo.");
       }
-      resetForm();
-      await loadData();
+      resetForm(form.type);
+      await loadData(form.type);
     } catch (caughtError) {
       handleError(caughtError, "Nao conseguimos salvar a movimentacao. Verifique conta, categoria, valor e data.");
     } finally {
@@ -144,13 +156,16 @@ export function TransactionsPage() {
     }
   }
 
-  function updateType(type: TransactionType) {
-    const nextCategory = categories.find((category) => category.type === type)?.id || "";
+  function selectTransactionType(type: TransactionType) {
     setForm((current) => ({
       ...current,
-      category_id: nextCategory,
+      category_id:
+        categories.find((category) => category.id === current.category_id && category.type === type)?.id ||
+        categories.find((category) => category.type === type)?.id ||
+        "",
       type,
     }));
+    window.setTimeout(() => descriptionInputRef.current?.focus(), 0);
   }
 
   function startNewTransaction(type: TransactionType) {
@@ -182,7 +197,7 @@ export function TransactionsPage() {
               <button
                 type="button"
                 className="flex size-9 items-center justify-center rounded-lg border border-slate-300 text-ink-500 transition hover:bg-slate-50"
-                onClick={resetForm}
+                onClick={() => resetForm()}
                 aria-label="Cancelar edicao"
               >
                 <X size={18} aria-hidden="true" />
@@ -190,23 +205,34 @@ export function TransactionsPage() {
             ) : null}
           </div>
 
-          <form className="mt-5 space-y-4" onSubmit={handleSubmit}>
-            <label className="block text-sm font-medium text-ink-700" htmlFor="transaction-type">
-              Tipo de movimentacao
-              <select
-                id="transaction-type"
-                className="mt-2 h-10 w-full rounded-lg border border-slate-300 bg-white px-3 text-sm outline-none transition focus:border-brand-600 focus:ring-2 focus:ring-brand-100"
-                value={form.type}
-                onChange={(event) => updateType(event.target.value as TransactionType)}
-              >
-                {Object.entries(transactionTypeLabels).map(([value, label]) => (
-                  <option key={value} value={value}>
-                    {label}
-                  </option>
-                ))}
-              </select>
-            </label>
+          <div className="mt-5 grid gap-3 sm:grid-cols-2">
+            <button
+              type="button"
+              className={`rounded-lg px-4 py-2 text-sm font-semibold transition ${
+                form.type === "income"
+                  ? "bg-emerald-600 text-white"
+                  : "border border-emerald-200 bg-white text-emerald-700 hover:bg-emerald-50"
+              }`}
+              aria-pressed={form.type === "income"}
+              onClick={() => selectTransactionType("income")}
+            >
+              Receita
+            </button>
+            <button
+              type="button"
+              className={`rounded-lg px-4 py-2 text-sm font-semibold transition ${
+                form.type === "expense"
+                  ? "bg-brand-600 text-white"
+                  : "border border-brand-200 bg-white text-brand-700 hover:bg-brand-50"
+              }`}
+              aria-pressed={form.type === "expense"}
+              onClick={() => selectTransactionType("expense")}
+            >
+              Despesa
+            </button>
+          </div>
 
+          <form className="mt-5 space-y-4" onSubmit={handleSubmit}>
             <label className="block text-sm font-medium text-ink-700" htmlFor="transaction-account">
               Conta financeira
               <select
@@ -309,7 +335,7 @@ export function TransactionsPage() {
             </div>
           ) : null}
 
-          <div className="mt-5 overflow-x-auto">
+          <div className="mt-5 overflow-x-auto rounded-lg border border-slate-100">
             <table className="w-full min-w-[820px] text-left text-sm">
               <thead className="border-b border-slate-200 text-xs uppercase text-ink-500">
                 <tr>

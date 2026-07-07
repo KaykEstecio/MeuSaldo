@@ -212,7 +212,7 @@ export function AccountsPage() {
             </div>
           ) : null}
 
-          <div className="mt-5 overflow-x-auto">
+          <div className="mt-5 overflow-x-auto rounded-lg border border-slate-100">
             <table className="w-full min-w-[720px] text-left text-sm">
               <thead className="border-b border-slate-200 text-xs uppercase text-ink-500">
                 <tr>

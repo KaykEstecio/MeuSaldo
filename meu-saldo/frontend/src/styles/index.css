@@ -12,10 +12,20 @@
   -moz-osx-font-smoothing: grayscale;
 }
 
+:root.dark {
+  color: #f8fafc;
+  background: #020617;
+}
+
 body {
   min-width: 320px;
   min-height: 100vh;
   margin: 0;
+  background: #f8fafc;
+}
+
+:root.dark body {
+  background: #020617;
 }
 
 button,
@@ -23,4 +33,181 @@ input,
 select,
 textarea {
   font: inherit;
+}
+
+button:not(:disabled) {
+  cursor: pointer;
+}
+
+button:disabled {
+  cursor: not-allowed;
+}
+
+button,
+a,
+input,
+select,
+textarea {
+  outline: none;
+}
+
+button:focus-visible,
+a:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.2);
+  outline: 2px solid #059669;
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  button:not(:disabled) {
+    transition-duration: 150ms;
+  }
+
+  button:not(:disabled):active {
+    transform: translateY(1px);
+  }
+}
+
+:root.dark .bg-white {
+  background-color: #0f172a;
+}
+
+:root.dark .bg-slate-50 {
+  background-color: #020617;
+}
+
+:root.dark .bg-slate-100 {
+  background-color: #1e293b;
+}
+
+:root.dark .bg-brand-50 {
+  background-color: rgba(5, 150, 105, 0.14);
+}
+
+:root.dark .bg-emerald-50 {
+  background-color: rgba(5, 150, 105, 0.14);
+}
+
+:root.dark .bg-emerald-100 {
+  background-color: rgba(5, 150, 105, 0.22);
+}
+
+:root.dark .bg-rose-50,
+:root.dark .bg-red-50 {
+  background-color: rgba(225, 29, 72, 0.14);
+}
+
+:root.dark .bg-amber-50 {
+  background-color: rgba(217, 119, 6, 0.16);
+}
+
+:root.dark .text-ink-900 {
+  color: #f8fafc;
+}
+
+:root.dark .text-ink-700 {
+  color: #cbd5e1;
+}
+
+:root.dark .text-ink-600 {
+  color: #cbd5e1;
+}
+
+:root.dark .text-ink-500 {
+  color: #94a3b8;
+}
+
+:root.dark .text-brand-700 {
+  color: #6ee7b7;
+}
+
+:root.dark .text-emerald-700 {
+  color: #6ee7b7;
+}
+
+:root.dark .text-rose-700,
+:root.dark .text-red-700 {
+  color: #fda4af;
+}
+
+:root.dark .text-amber-700,
+:root.dark .text-amber-800 {
+  color: #fcd34d;
+}
+
+:root.dark .border-slate-100,
+:root.dark .border-slate-200,
+:root.dark .border-slate-300 {
+  border-color: #334155;
+}
+
+:root.dark .border-brand-100,
+:root.dark .border-brand-200 {
+  border-color: rgba(16, 185, 129, 0.35);
+}
+
+:root.dark .border-emerald-200 {
+  border-color: rgba(16, 185, 129, 0.35);
+}
+
+:root.dark .border-rose-200,
+:root.dark .border-red-200 {
+  border-color: rgba(251, 113, 133, 0.35);
+}
+
+:root.dark .border-amber-200 {
+  border-color: rgba(252, 211, 77, 0.35);
+}
+
+:root.dark input,
+:root.dark select,
+:root.dark textarea {
+  background-color: #0f172a;
+  border-color: #475569;
+  color: #f8fafc;
+}
+
+:root.dark input::placeholder,
+:root.dark textarea::placeholder {
+  color: #64748b;
+}
+
+:root.dark input:disabled,
+:root.dark select:disabled,
+:root.dark textarea:disabled {
+  background-color: #1e293b;
+  color: #94a3b8;
+}
+
+:root.dark .divide-slate-100 > :not([hidden]) ~ :not([hidden]),
+:root.dark .divide-slate-200 > :not([hidden]) ~ :not([hidden]) {
+  border-color: #334155;
+}
+
+:root.dark thead {
+  border-color: #334155;
+}
+
+:root.dark .shadow-sm,
+:root.dark .shadow-soft {
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.28);
+}
+
+:root.dark .recharts-cartesian-grid line {
+  stroke: #334155;
+}
+
+:root.dark .recharts-text,
+:root.dark .recharts-legend-item-text {
+  fill: #cbd5e1;
+  color: #cbd5e1 !important;
+}
+
+:root.dark .recharts-tooltip-wrapper .recharts-default-tooltip {
+  background-color: #0f172a !important;
+  border-color: #334155 !important;
+  color: #f8fafc !important;
 }
