@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, Query, status
 from sqlalchemy.orm import Session
 
-from app.api.deps import get_current_user
+from app.api.deps import ai_assistant_rate_limit, get_current_user
 from app.database.connection import get_db
 from app.models.user import User
 from app.schemas.ai_assistant import AiAssistantReply, AiMessageCreate, AiMessageRead
@@ -12,7 +12,12 @@ from app.services.ai_assistant_service import create_ai_assistant_reply, list_ai
 router = APIRouter(prefix="/ai-assistant", tags=["ai-assistant"])
 
 
-@router.post("/messages", response_model=ApiResponse[AiAssistantReply], status_code=status.HTTP_201_CREATED)
+@router.post(
+    "/messages",
+    response_model=ApiResponse[AiAssistantReply],
+    status_code=status.HTTP_201_CREATED,
+    dependencies=[Depends(ai_assistant_rate_limit)],
+)
 def create_message(
     payload: AiMessageCreate,
     current_user: User = Depends(get_current_user),

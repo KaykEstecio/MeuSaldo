@@ -37,6 +37,7 @@ Esta fase configura a base da API, autenticacao inicial, CRUD de contas, CRUD de
 - Assistente financeiro em `/api/v1/ai-assistant/messages`
 - Fallback de IA por regras com dados agregados do usuario
 - Historico de mensagens em `ai_messages`
+- Rate limit configuravel em cadastro, login e envio de mensagens ao assistente
 - Testes de integracao da autenticacao, contas, categorias, transacoes, dashboard, orcamentos e assistente
 - Estrutura inicial de pastas
 
@@ -97,6 +98,17 @@ Configure a variavel `DATABASE_URL` no arquivo `.env`:
 ```env
 DATABASE_URL=postgresql+psycopg://postgres:postgres@localhost:5432/meusaldodb
 ```
+
+Variaveis de rate limit usadas por padrao:
+
+```env
+RATE_LIMIT_AUTH_REQUESTS=10
+RATE_LIMIT_AUTH_WINDOW_SECONDS=60
+RATE_LIMIT_AI_REQUESTS=20
+RATE_LIMIT_AI_WINDOW_SECONDS=60
+```
+
+Quando o limite e atingido, a API retorna HTTP `429` com erro `RATE_LIMIT_EXCEEDED`.
 
 Altere usuario, senha, host ou porta conforme sua instalacao local.
 
@@ -464,10 +476,34 @@ Nesta fase, o assistente usa `AI_PROVIDER=rules`, analisa apenas dados agregados
 
 ## Testes
 
+Os testes de integracao usam o banco configurado localmente. Antes de rodar, garanta que o `.env` aponta para um
+PostgreSQL local ou para um banco descartavel de teste.
+
+Por seguranca, o pytest bloqueia execucao quando:
+
+- `APP_ENV=production`
+- `DATABASE_URL` parece apontar para Neon, Render ou outro ambiente remoto
+- `DATABASE_URL` usa `sslmode=require`
+- o host do banco nao e `localhost`, `127.0.0.1` ou `::1`
+
+Se for realmente necessario usar um banco remoto descartavel de teste, defina:
+
+```bash
+MEUSALDO_ALLOW_NON_LOCAL_TEST_DB=true
+```
+
+Nunca rode testes automatizados usando a URL do Neon de producao.
+
+Com o PostgreSQL local ativo, aplique as migrations antes de testar:
+
+```bash
+python -m alembic upgrade head
+```
+
 Rodar todos os testes:
 
 ```bash
-pytest
+python -m pytest
 ```
 
 ## Revisao Final

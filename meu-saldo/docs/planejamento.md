@@ -144,6 +144,7 @@ Codigos de erro usados:
 - `FORBIDDEN`
 - `RESOURCE_NOT_FOUND`
 - `CONFLICT`
+- `RATE_LIMIT_EXCEEDED`
 - `INTERNAL_ERROR`
 
 ## 7. Entidades Do MVP
@@ -432,6 +433,10 @@ Ja foram implementados:
 - Navegacao autenticada entre dashboard, contas, categorias, transacoes, orcamentos e assistente.
 - Revisao final do MVP em `docs/revisao-final-mvp.md`.
 - Checklist de seguranca, deploy e validacao pos-deploy.
+- Protecao para impedir testes automatizados contra banco remoto/producao.
+- Pipeline de CI com backend, migrations, testes, audit, typecheck e build.
+- Code splitting por rota no frontend para reduzir o bundle inicial.
+- Rate limit nas rotas sensiveis de login, cadastro e assistente financeiro.
 
 Ainda nao foram implementados:
 
@@ -801,9 +806,9 @@ Este topico registra melhorias futuras apos o fechamento do MVP. Nenhum item aba
 - Registrar `last_login_at` no usuario a cada login bem-sucedido para auditoria basica.
 - Criar testes frontend automatizados para login, dashboard, contas, categorias, transacoes, orcamentos e assistente.
 - Criar testes end-to-end para o fluxo real do usuario: cadastro, login, conta, categoria, transacao, dashboard, orcamento e assistente.
-- Adicionar pipeline de CI para rodar `pytest`, `alembic check`, `npm run typecheck`, `npm run build` e `npm audit`.
-- Otimizar bundle frontend com code splitting por rota, principalmente por causa de Recharts e telas autenticadas.
-- Adicionar rate limit nas rotas sensiveis: login, cadastro e assistente.
+- Pipeline de CI para rodar `pytest`, `alembic check`, `npm run typecheck`, `npm run build` e `npm audit`. Implementado em `.github/workflows/ci.yml`.
+- Otimizar bundle frontend com code splitting por rota, principalmente por causa de Recharts e telas autenticadas. Implementado em `frontend/src/App.tsx`.
+- Rate limit nas rotas sensiveis: login, cadastro e assistente. Implementado com limites configuraveis por ambiente.
 - Melhorar observabilidade do backend com logs estruturados sem dados sensiveis.
 - Criar checklist automatizado de pos-deploy para Render, Neon e Vercel.
 
@@ -869,6 +874,7 @@ Regras obrigatorias:
 - Rodar `npm audit --audit-level=moderate` antes de cada deploy frontend.
 - Rodar `python -m alembic check` antes de cada deploy backend.
 - Rodar `python -m pytest` antes de aplicar migrations em producao.
+- Rodar testes apenas com PostgreSQL local ou banco descartavel de teste; o pytest bloqueia URLs remotas/producao por padrao.
 - Atualizar `.env.example` sempre que uma nova variavel de ambiente for criada.
 - Atualizar este planejamento sempre que uma fase nova for concluida ou uma decisao estrutural mudar.
 

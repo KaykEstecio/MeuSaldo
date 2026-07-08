@@ -2,9 +2,9 @@
 
 Frontend do MeuSaldo usando React, TypeScript, Vite, TailwindCSS e Recharts.
 
-## Escopo Da Fase 18
+## Escopo Atual
 
-Esta fase cobre a base tecnica do frontend, as telas de autenticacao, o dashboard financeiro e as telas financeiras operacionais:
+O frontend cobre a base tecnica, autenticacao, area financeira, assistente, painel administrativo e melhorias de experiencia:
 
 - React com TypeScript
 - Vite
@@ -25,6 +25,11 @@ Esta fase cobre a base tecnica do frontend, as telas de autenticacao, o dashboar
 - Tela de transacoes em `/transactions`
 - Tela de orcamentos em `/budgets`
 - Tela do assistente financeiro em `/ai-assistant`
+- Painel administrativo em `/admin` para usuarios com permissao
+- Estados vazios orientados para usuarios iniciantes
+- Checklist de primeiro uso no dashboard
+- Modo claro/escuro com preferencia salva no navegador
+- Code splitting por rota para reduzir o bundle inicial
 - Armazenamento local do JWT
 - Logout
 
@@ -70,6 +75,14 @@ npm run build
 npm run preview
 npm run typecheck
 ```
+
+## Qualidade E Deploy
+
+- `npm run typecheck` valida TypeScript.
+- `npm run build` gera o build de producao e separa chunks por rota.
+- `npm audit --audit-level=moderate` e executado no CI.
+- O deploy na Vercel deve usar `VITE_API_URL=https://meusaldo.onrender.com/api/v1`.
+- O arquivo `vercel.json` mantem o fallback SPA para refresh e acesso direto a rotas internas.
 
 ## Revisao Final
 

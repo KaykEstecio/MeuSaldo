@@ -26,6 +26,9 @@ O sistema possui:
 - Dados financeiros filtram por usuario no backend.
 - Assistente usa dados agregados e nao executa acoes financeiras.
 - Provedor externo de IA ainda nao esta ativo.
+- Testes automatizados bloqueiam execucao quando a `DATABASE_URL` parece apontar para producao/remoto.
+- CI executa migrations, testes backend, audit, typecheck e build frontend.
+- Rotas de cadastro, login e assistente possuem rate limit com erro `RATE_LIMIT_EXCEEDED`.
 
 ## Checklist De Deploy
 
@@ -46,6 +49,10 @@ AI_PROVIDER=rules
 AI_API_KEY=
 AI_MODEL=
 AI_TIMEOUT_SECONDS=20
+RATE_LIMIT_AUTH_REQUESTS=10
+RATE_LIMIT_AUTH_WINDOW_SECONDS=60
+RATE_LIMIT_AI_REQUESTS=20
+RATE_LIMIT_AI_WINDOW_SECONDS=60
 ```
 
 Depois de alterar backend ou migrations:
@@ -113,6 +120,9 @@ python -m alembic check
 python -m pytest
 ```
 
+Antes de rodar `python -m pytest`, confirme que o `.env` aponta para PostgreSQL local ou banco descartavel de teste.
+Nunca use a URL do Neon de producao para testes automatizados.
+
 Frontend:
 
 ```bash
@@ -125,7 +135,7 @@ npm run build
 ## Riscos Conhecidos
 
 - O token JWT fica em `localStorage`; aceitavel para MVP, mas cookies HttpOnly seriam uma evolucao de seguranca.
-- O bundle frontend passa de 500 kB; nao bloqueia o MVP, mas pode ser otimizado com code splitting.
+- O frontend usa code splitting por rota; monitore novos avisos de bundle conforme o app crescer.
 - Render pode ter cold start em plano gratuito.
 - Provedor externo de IA ainda nao foi integrado; o modo atual e `AI_PROVIDER=rules`.
 - Nao ha testes automatizados de componente no frontend; a validacao atual usa typecheck, build e smoke manual.
