@@ -41,6 +41,9 @@ jobs:
       JWT_ALGORITHM: HS256
       JWT_ACCESS_TOKEN_EXPIRE_MINUTES: "30"
       JWT_REFRESH_TOKEN_EXPIRE_DAYS: "7"
+      JWT_REFRESH_COOKIE_NAME: meusaldo_refresh
+      JWT_COOKIE_SECURE: "false"
+      JWT_COOKIE_SAMESITE: lax
       AI_PROVIDER: rules
       AI_API_KEY: ""
       AI_MODEL: ""
@@ -104,5 +107,65 @@ jobs:
       - name: Typecheck
         run: npm run typecheck
 
+      - name: Unit tests
+        run: npm test
+
       - name: Build
         run: npm run build
+
+  e2e:
+    name: Critical E2E flow
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_DB: meusaldodb
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d meusaldodb"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    env:
+      APP_ENV: test
+      APP_DEBUG: "false"
+      DATABASE_URL: postgresql+psycopg://postgres:postgres@localhost:5432/meusaldodb
+      CORS_ORIGINS: http://localhost:5173
+      JWT_SECRET_KEY: ci-e2e-secret-key
+      JWT_COOKIE_SECURE: "false"
+      JWT_COOKIE_SAMESITE: lax
+      AI_PROVIDER: rules
+      AI_API_KEY: ""
+      AI_MODEL: ""
+      RATE_LIMIT_AUTH_REQUESTS: "100"
+      RATE_LIMIT_AI_REQUESTS: "100"
+      VITE_API_URL: http://localhost:8000/api/v1
+      PLAYWRIGHT_BASE_URL: http://localhost:5173
+      PLAYWRIGHT_API_URL: http://localhost:8000/api/v1
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: backend/requirements.txt
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - name: Install dependencies
+        run: |
+          python -m pip install -r backend/requirements.txt
+          cd frontend && npm ci
+          npx playwright install --with-deps chromium
+      - name: Apply migrations
+        working-directory: backend
+        run: python -m alembic upgrade head
+      - name: Run critical flow
+        working-directory: frontend
+        run: npm run e2e

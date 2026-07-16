@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState, type ReactNode } from "react";
 import { Link, NavLink, useLocation, useNavigate } from "react-router-dom";
 import { LogOut, Moon, Plus, Sun, WalletCards } from "lucide-react";
 
-import { getCurrentUser } from "../../api/endpoints";
+import { getCurrentUser, logout } from "../../api/endpoints";
 import { useAuthToken } from "../../hooks/useAuthToken";
 import { useTheme } from "../../hooks/useTheme";
 import { ROUTES } from "../../lib/routes";
@@ -103,6 +103,7 @@ export function FinanceShell({ children, subtitle, title }: FinanceShellProps) {
                 onClick={() => {
                   clearToken();
                   navigate(ROUTES.login, { replace: true });
+                  void logout().catch(() => undefined);
                 }}
               >
                 <LogOut size={18} aria-hidden="true" />

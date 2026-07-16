@@ -1,17 +1,35 @@
-const ACCESS_TOKEN_KEY = "meusaldo.access_token";
+let accessToken: string | null = null;
+let sessionInitialized = false;
+const listeners = new Set<() => void>();
 
 export function getAccessToken(): string | null {
-  return window.localStorage.getItem(ACCESS_TOKEN_KEY);
+  return accessToken;
 }
 
 export function setAccessToken(token: string): void {
-  window.localStorage.setItem(ACCESS_TOKEN_KEY, token);
+  accessToken = token;
+  listeners.forEach((listener) => listener());
 }
 
 export function clearAccessToken(): void {
-  window.localStorage.removeItem(ACCESS_TOKEN_KEY);
+  accessToken = null;
+  listeners.forEach((listener) => listener());
+}
+
+export function subscribeToAuth(callback: () => void): () => void {
+  listeners.add(callback);
+  return () => listeners.delete(callback);
+}
+
+export function getSessionInitialized(): boolean {
+  return sessionInitialized;
+}
+
+export function markSessionInitialized(): void {
+  sessionInitialized = true;
+  listeners.forEach((listener) => listener());
 }
 
 export function isAuthenticated(): boolean {
-  return Boolean(getAccessToken());
+  return Boolean(accessToken);
 }

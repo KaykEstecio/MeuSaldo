@@ -30,10 +30,10 @@ O frontend cobre a base tecnica, autenticacao, area financeira, assistente, pain
 - Checklist de primeiro uso no dashboard
 - Modo claro/escuro com preferencia salva no navegador
 - Code splitting por rota para reduzir o bundle inicial
-- Armazenamento local do JWT
+- Access token mantido apenas em memoria e refresh token em cookie HttpOnly
 - Logout
 
-O assistente usa fallback por regras no backend. Integracao com provedor externo de IA ainda nao foi implementada.
+O assistente suporta OpenAI pela Responses API e mantem fallback por regras no backend.
 
 ## Como Rodar Localmente
 
@@ -81,8 +81,8 @@ npm run typecheck
 - `npm run typecheck` valida TypeScript.
 - `npm run build` gera o build de producao e separa chunks por rota.
 - `npm audit --audit-level=moderate` e executado no CI.
-- O deploy na Vercel deve usar `VITE_API_URL=https://meusaldo.onrender.com/api/v1`.
-- O arquivo `vercel.json` mantem o fallback SPA para refresh e acesso direto a rotas internas.
+- O deploy na Vercel deve usar `VITE_API_URL=/api/v1`.
+- O arquivo `vercel.json` encaminha `/api/*` ao backend Render no mesmo dominio do frontend e mantem o fallback SPA.
 
 ## Revisao Final
 

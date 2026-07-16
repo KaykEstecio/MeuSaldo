@@ -25,7 +25,7 @@ O sistema possui:
 - Rotas financeiras exigem usuario autenticado.
 - Dados financeiros filtram por usuario no backend.
 - Assistente usa dados agregados e nao executa acoes financeiras.
-- Provedor externo de IA ainda nao esta ativo.
+- Provedor externo OpenAI esta integrado e possui fallback automatico por regras.
 - Testes automatizados bloqueiam execucao quando a `DATABASE_URL` parece apontar para producao/remoto.
 - CI executa migrations, testes backend, audit, typecheck e build frontend.
 - Rotas de cadastro, login e assistente possuem rate limit com erro `RATE_LIMIT_EXCEEDED`.
@@ -45,9 +45,13 @@ JWT_SECRET_KEY=chave-forte-de-producao
 JWT_ALGORITHM=HS256
 JWT_ACCESS_TOKEN_EXPIRE_MINUTES=30
 JWT_REFRESH_TOKEN_EXPIRE_DAYS=7
-AI_PROVIDER=rules
+JWT_REFRESH_COOKIE_NAME=meusaldo_refresh
+JWT_COOKIE_SECURE=true
+JWT_COOKIE_SAMESITE=lax
+AI_PROVIDER=openai
 AI_API_KEY=
-AI_MODEL=
+OPENAI_API_KEY=CONFIGURAR_COM_SEGREDO_NA_RENDER
+AI_MODEL=gpt-5-mini
 AI_TIMEOUT_SECONDS=20
 RATE_LIMIT_AUTH_REQUESTS=10
 RATE_LIMIT_AUTH_WINDOW_SECONDS=60
@@ -69,7 +73,7 @@ Em seguida, fazer deploy da Render.
 Variavel esperada:
 
 ```env
-VITE_API_URL=https://meusaldo.onrender.com/api/v1
+VITE_API_URL=/api/v1
 ```
 
 O arquivo `frontend/vercel.json` deve continuar versionado para fallback SPA.
@@ -134,11 +138,11 @@ npm run build
 
 ## Riscos Conhecidos
 
-- O token JWT fica em `localStorage`; aceitavel para MVP, mas cookies HttpOnly seriam uma evolucao de seguranca.
+- O access token permanece apenas em memoria e a renovacao usa refresh token rotativo em cookie `HttpOnly`.
 - O frontend usa code splitting por rota; monitore novos avisos de bundle conforme o app crescer.
 - Render pode ter cold start em plano gratuito.
-- Provedor externo de IA ainda nao foi integrado; o modo atual e `AI_PROVIDER=rules`.
-- Nao ha testes automatizados de componente no frontend; a validacao atual usa typecheck, build e smoke manual.
+- OpenAI e opcional; se o provedor falhar, o sistema usa automaticamente `AI_PROVIDER=rules` como fallback.
+- O frontend possui testes unitarios com Vitest e fluxo critico E2E com Playwright, alem de typecheck e build.
 
 ## Criterio De Pronto Do MVP
 

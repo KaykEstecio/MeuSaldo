@@ -45,6 +45,13 @@ export function register(payload: RegisterPayload) {
   });
 }
 
+export async function logout() {
+  return apiRequest<ApiResponse<{ revoked: boolean }>>("/auth/logout", {
+    method: "POST",
+    withAuth: false,
+  });
+}
+
 export function getCurrentUser() {
   return apiRequest<ApiResponse<User>>("/users/me");
 }

@@ -29,6 +29,8 @@ def _read_app_env() -> str:
 
 
 def pytest_configure() -> None:
+    os.environ["AI_PROVIDER"] = "rules"
+    os.environ["OPENAI_API_KEY"] = ""
     database_url = _read_database_url()
     app_env = _read_app_env()
     allow_non_local = os.getenv("MEUSALDO_ALLOW_NON_LOCAL_TEST_DB") == "true"

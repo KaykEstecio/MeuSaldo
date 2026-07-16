@@ -5,7 +5,11 @@ import { ROUTES } from "../../lib/routes";
 
 export function ProtectedRoute() {
   const location = useLocation();
-  const { isAuthenticated } = useAuthToken();
+  const { isAuthenticated, isReady } = useAuthToken();
+
+  if (!isReady) {
+    return <div className="flex min-h-screen items-center justify-center">Restaurando sessao...</div>;
+  }
 
   if (!isAuthenticated) {
     return <Navigate to={ROUTES.login} replace state={{ from: location }} />;

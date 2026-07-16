@@ -3,7 +3,7 @@ import { LogOut, ShieldCheck } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 import { ApiError } from "../../api/client";
-import { getCurrentUser } from "../../api/endpoints";
+import { getCurrentUser, logout } from "../../api/endpoints";
 import { useAuthToken } from "../../hooks/useAuthToken";
 import { ROUTES } from "../../lib/routes";
 import type { User } from "../../types/api";
@@ -66,6 +66,7 @@ export function AuthenticatedStartPage() {
           onClick={() => {
             clearToken();
             navigate(ROUTES.login, { replace: true });
+            void logout().catch(() => undefined);
           }}
         >
           <LogOut size={18} aria-hidden="true" />

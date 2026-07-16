@@ -7,11 +7,13 @@ from app.models.ai_message import AiMessage
 from app.models.user import User
 from app.repositories.ai_message_repository import create_ai_message_pair, count_user_ai_messages, list_user_ai_messages
 from app.schemas.ai_assistant import AiAssistantReply, AiMessageCreate, AiMessageRead
+from app.services.ai_provider import generate_external_answer
 from app.services.budget_service import list_user_budgets
 from app.services.dashboard_service import get_dashboard_summary
 
 
-DISCLAIMER = "Resposta gerada por regras do MeuSaldo; use como apoio, nao como recomendacao financeira profissional."
+RULES_DISCLAIMER = "Resposta gerada por regras do MeuSaldo; use como apoio, nao como recomendacao financeira profissional."
+EXTERNAL_DISCLAIMER = "Resposta gerada por IA a partir de dados agregados; use como apoio, nao como recomendacao financeira profissional."
 
 
 def money_text(value: Decimal) -> str:
@@ -68,12 +70,48 @@ def build_rules_answer(db: Session, current_user: User, prompt: str) -> str:
     return " ".join(lines)
 
 
+def build_aggregated_context(db: Session, current_user: User) -> str:
+    summary = get_dashboard_summary(db, current_user)
+    budgets, _total = list_user_budgets(
+        db,
+        current_user,
+        page=1,
+        page_size=100,
+        month=summary.period.month,
+        year=summary.period.year,
+    )
+    categories = ", ".join(
+        f"{item.category_name}: {money_text(item.amount)}" for item in summary.expense_by_category[:5]
+    ) or "nenhuma despesa categorizada"
+    budget_status = ", ".join(
+        f"{item.category_name}: gasto {money_text(item.spent_amount)} de {money_text(item.limit_amount)}"
+        for item in budgets[:10]
+    ) or "nenhum orcamento ativo"
+    return "\n".join(
+        [
+            f"Periodo: {summary.period.month:02d}/{summary.period.year}",
+            f"Saldo total: {money_text(summary.total_balance)}",
+            f"Receitas: {money_text(summary.monthly_income)}",
+            f"Despesas: {money_text(summary.monthly_expense)}",
+            f"Resultado: {money_text(summary.monthly_net)}",
+            f"Contas ativas: {summary.active_accounts}",
+            f"Transacoes no periodo: {summary.transactions_count}",
+            f"Principais despesas por categoria: {categories}",
+            f"Orcamentos: {budget_status}",
+        ]
+    )
+
+
 def create_ai_assistant_reply(db: Session, current_user: User, payload: AiMessageCreate) -> AiAssistantReply:
     prompt = payload.message.strip()
     source = "rules"
-    answer = build_rules_answer(db, current_user, prompt)
-    if settings.ai_provider != "rules":
-        source = "rules"
+    answer = generate_external_answer(prompt, build_aggregated_context(db, current_user))
+    if answer:
+        source = "external"
+        disclaimer = EXTERNAL_DISCLAIMER
+    else:
+        answer = build_rules_answer(db, current_user, prompt)
+        disclaimer = RULES_DISCLAIMER
 
     user_message, assistant_message = create_ai_message_pair(
         db,
@@ -94,7 +132,7 @@ def create_ai_assistant_reply(db: Session, current_user: User, payload: AiMessag
     return AiAssistantReply(
         answer=answer,
         source=source,
-        disclaimer=DISCLAIMER,
+        disclaimer=disclaimer,
         user_message=AiMessageRead.model_validate(user_message),
         assistant_message=AiMessageRead.model_validate(assistant_message),
     )

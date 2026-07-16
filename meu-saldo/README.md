@@ -12,7 +12,7 @@ MeuSaldo e um sistema web de controle financeiro pessoal com assistente de IA.
 - Frontend: React com TypeScript
 - Estilizacao: TailwindCSS
 - Graficos: Recharts
-- IA: integracao futura por API externa, com fallback baseado em regras
+- IA: OpenAI pela Responses API, com fallback baseado em regras
 
 ## Estrutura Inicial
 
@@ -55,7 +55,7 @@ Ambientes publicados:
 Variaveis esperadas no frontend da Vercel:
 
 ```env
-VITE_API_URL=https://meusaldo.onrender.com/api/v1
+VITE_API_URL=/api/v1
 ```
 
 Variaveis esperadas no backend da Render:
@@ -69,9 +69,13 @@ JWT_SECRET_KEY=uma-chave-forte-de-producao
 JWT_ALGORITHM=HS256
 JWT_ACCESS_TOKEN_EXPIRE_MINUTES=30
 JWT_REFRESH_TOKEN_EXPIRE_DAYS=7
-AI_PROVIDER=rules
+JWT_REFRESH_COOKIE_NAME=meusaldo_refresh
+JWT_COOKIE_SECURE=true
+JWT_COOKIE_SAMESITE=lax
+AI_PROVIDER=openai
 AI_API_KEY=
-AI_MODEL=
+OPENAI_API_KEY=configure-no-painel-seguro-da-render
+AI_MODEL=gpt-5-mini
 AI_TIMEOUT_SECONDS=20
 RATE_LIMIT_AUTH_REQUESTS=10
 RATE_LIMIT_AUTH_WINDOW_SECONDS=60
@@ -84,7 +88,7 @@ Observacoes do pos-deploy:
 - Backend Render validado com sucesso em `/health`.
 - Conexao Render -> Neon validada com sucesso em `/health/db`.
 - CORS do backend validado para a origem `https://meusaldo-frontend.vercel.app`.
-- O frontend publicado deve usar `VITE_API_URL=https://meusaldo.onrender.com/api/v1`.
+- O frontend publicado deve usar `VITE_API_URL=/api/v1` para acessar a API pelo proxy same-origin da Vercel.
 - O arquivo `frontend/vercel.json` mantem o fallback SPA para refresh e acesso direto em rotas como `/login`.
 - Em plano gratuito da Render, o primeiro acesso pode sofrer cold start.
 

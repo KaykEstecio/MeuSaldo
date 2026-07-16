@@ -12,7 +12,7 @@ type Status = "loading" | "allowed" | "denied";
 
 export function AdminRoute() {
   const location = useLocation();
-  const { clearToken, isAuthenticated } = useAuthToken();
+  const { clearToken, isAuthenticated, isReady } = useAuthToken();
   const [status, setStatus] = useState<Status>("loading");
   const [user, setUser] = useState<User | null>(null);
 
@@ -20,6 +20,10 @@ export function AdminRoute() {
     let isMounted = true;
 
     async function validateAdmin() {
+      if (!isReady) {
+        return;
+      }
+
       if (!isAuthenticated) {
         setStatus("denied");
         return;
@@ -51,7 +55,16 @@ export function AdminRoute() {
     return () => {
       isMounted = false;
     };
-  }, [clearToken, isAuthenticated]);
+  }, [clearToken, isAuthenticated, isReady]);
+
+  if (!isReady) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-slate-50 text-ink-500">
+        <Loader2 className="mr-2 animate-spin" size={20} aria-hidden="true" />
+        Restaurando sessao
+      </div>
+    );
+  }
 
   if (!isAuthenticated) {
     return <Navigate to={ROUTES.login} replace state={{ from: location }} />;

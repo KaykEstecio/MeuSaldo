@@ -128,3 +128,24 @@ def test_ai_assistant_requires_authentication_and_isolates_history() -> None:
     assert other_list_response.status_code == 200
     assert other_list_response.json()["data"] == []
     assert other_list_response.json()["meta"]["total"] == 0
+
+
+def test_ai_assistant_uses_external_provider_when_available(monkeypatch) -> None:
+    email = unique_email()
+    token = create_user_token(email)
+    monkeypatch.setattr(
+        "app.services.ai_assistant_service.generate_external_answer",
+        lambda prompt, context: "Analise externa segura com proximo passo pratico.",
+    )
+
+    response = client.post(
+        "/api/v1/ai-assistant/messages",
+        headers=auth_headers(token),
+        json={"message": "Analise meu mes"},
+    )
+    assert response.status_code == 201
+    data = response.json()["data"]
+    assert data["source"] == "external"
+    assert data["assistant_message"]["source"] == "external"
+    assert email not in data["answer"]
+    cleanup_user(email)

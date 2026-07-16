@@ -161,3 +161,45 @@ def test_method_not_allowed_returns_official_error() -> None:
 
     assert response.status_code == 405
     assert response.json()["error"]["code"] == "VALIDATION_ERROR"
+
+
+def test_refresh_cookie_rotates_and_logout_revokes_session() -> None:
+    email = unique_email()
+    cleanup_user(email)
+    client.post(
+        "/api/v1/auth/register",
+        json={"name": "Usuario Sessao", "email": email, "password": "SenhaForte123"},
+    )
+    login_response = client.post(
+        "/api/v1/auth/login",
+        json={"email": email, "password": "SenhaForte123"},
+    )
+    assert login_response.status_code == 200
+    assert "HttpOnly" in login_response.headers["set-cookie"]
+    first_cookie = client.cookies.get("meusaldo_refresh")
+    assert first_cookie
+
+    refresh_response = client.post("/api/v1/auth/refresh")
+    assert refresh_response.status_code == 200
+    assert refresh_response.json()["data"]["access_token"]
+    rotated_cookie = client.cookies.get("meusaldo_refresh")
+    assert rotated_cookie and rotated_cookie != first_cookie
+
+    logout_response = client.post("/api/v1/auth/logout")
+    assert logout_response.status_code == 200
+    assert logout_response.json()["data"]["revoked"] is True
+    assert client.cookies.get("meusaldo_refresh") is None
+
+    client.cookies.set("meusaldo_refresh", rotated_cookie, path="/api/v1/auth")
+    revoked_response = client.post("/api/v1/auth/refresh")
+    assert revoked_response.status_code == 401
+    cleanup_user(email)
+
+
+def test_refresh_rejects_untrusted_origin() -> None:
+    response = client.post(
+        "/api/v1/auth/refresh",
+        headers={"Origin": "https://example.invalid"},
+    )
+    assert response.status_code == 403
+    assert response.json()["error"]["code"] == "FORBIDDEN"

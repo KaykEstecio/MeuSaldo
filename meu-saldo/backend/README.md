@@ -41,7 +41,7 @@ Esta fase configura a base da API, autenticacao inicial, CRUD de contas, CRUD de
 - Testes de integracao da autenticacao, contas, categorias, transacoes, dashboard, orcamentos e assistente
 - Estrutura inicial de pastas
 
-Integracao com provedor externo de IA ainda nao foi implementada.
+Integracao com OpenAI pela Responses API implementada, mantendo fallback automatico por regras.
 
 ## Como Rodar Localmente
 

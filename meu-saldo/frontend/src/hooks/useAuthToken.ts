@@ -1,39 +1,29 @@
 import { useCallback, useSyncExternalStore } from "react";
 
-import { clearAccessToken, getAccessToken, setAccessToken } from "../lib/auth";
-
-const authEventName = "meusaldo-auth-token-change";
-
-function emitAuthChange() {
-  window.dispatchEvent(new Event(authEventName));
-}
-
-function subscribe(callback: () => void) {
-  window.addEventListener(authEventName, callback);
-  window.addEventListener("storage", callback);
-
-  return () => {
-    window.removeEventListener(authEventName, callback);
-    window.removeEventListener("storage", callback);
-  };
-}
+import {
+  clearAccessToken,
+  getAccessToken,
+  getSessionInitialized,
+  setAccessToken,
+  subscribeToAuth,
+} from "../lib/auth";
 
 export function useAuthToken() {
-  const token = useSyncExternalStore(subscribe, getAccessToken, () => null);
+  const token = useSyncExternalStore(subscribeToAuth, getAccessToken, () => null);
+  const isReady = useSyncExternalStore(subscribeToAuth, getSessionInitialized, () => false);
 
   const saveToken = useCallback((nextToken: string) => {
     setAccessToken(nextToken);
-    emitAuthChange();
   }, []);
 
   const removeToken = useCallback(() => {
     clearAccessToken();
-    emitAuthChange();
   }, []);
 
   return {
     token,
     isAuthenticated: Boolean(token),
+    isReady,
     setToken: saveToken,
     clearToken: removeToken,
   };

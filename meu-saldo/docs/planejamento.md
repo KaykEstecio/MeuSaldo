@@ -438,9 +438,13 @@ Ja foram implementados:
 - Code splitting por rota no frontend para reduzir o bundle inicial.
 - Rate limit nas rotas sensiveis de login, cadastro e assistente financeiro.
 
-Ainda nao foram implementados:
+Evolucoes pos-MVP implementadas:
 
-- Integracao com provedor externo de IA.
+- Integracao opcional com OpenAI pela Responses API, preservando fallback por regras.
+- Sessao com access token em memoria e refresh token rotativo/revogavel em cookie HttpOnly.
+- Proxy same-origin da Vercel para evitar dependencia de cookies de terceiros entre frontend e backend.
+- Testes unitarios frontend e fluxo critico E2E com Playwright.
+- Logs estruturados, readiness check e smoke check automatizado de pos-deploy.
 
 ## 13. Dashboard Backend Implementado
 
@@ -797,20 +801,20 @@ Este topico registra melhorias futuras apos o fechamento do MVP. Nenhum item aba
 
 ### Prioridade Alta
 
-- Substituir armazenamento de JWT em `localStorage` por estrategia mais segura, preferencialmente cookies `HttpOnly`, `Secure` e `SameSite`.
-- Implementar refresh token com rotacao, expiracao, revogacao e documentacao de sessao.
+- Substituir armazenamento de JWT em `localStorage` por access token em memoria e refresh token em cookie `HttpOnly`. Implementado.
+- Implementar refresh token com rotacao, expiracao, revogacao e documentacao de sessao. Implementado.
 - Criar autorizacao por perfil com `role=user|admin` no backend, usando dependencia/middleware para bloquear rotas administrativas.
 - Criar rota protegida `/api/v1/admin` exclusiva para usuarios com `role=admin`.
 - Criar painel frontend `/admin` protegido, impedindo acesso de usuarios comuns tambem no roteamento do frontend.
 - Criar listagem administrativa de usuarios com `id`, `name`, `email` e `created_at`, sem expor `password_hash` ou dados financeiros.
 - Registrar `last_login_at` no usuario a cada login bem-sucedido para auditoria basica.
-- Criar testes frontend automatizados para login, dashboard, contas, categorias, transacoes, orcamentos e assistente.
-- Criar testes end-to-end para o fluxo real do usuario: cadastro, login, conta, categoria, transacao, dashboard, orcamento e assistente.
+- Criar testes frontend automatizados. Parcial: store de autenticacao e login cobertos por Vitest; fluxo completo coberto por E2E.
+- Criar testes end-to-end para o fluxo real do usuario: cadastro, login, conta, categoria, transacao, dashboard, orcamento e assistente. Implementado com Playwright.
 - Pipeline de CI para rodar `pytest`, `alembic check`, `npm run typecheck`, `npm run build` e `npm audit`. Implementado em `.github/workflows/ci.yml`.
 - Otimizar bundle frontend com code splitting por rota, principalmente por causa de Recharts e telas autenticadas. Implementado em `frontend/src/App.tsx`.
 - Rate limit nas rotas sensiveis: login, cadastro e assistente. Implementado com limites configuraveis por ambiente.
-- Melhorar observabilidade do backend com logs estruturados sem dados sensiveis.
-- Criar checklist automatizado de pos-deploy para Render, Neon e Vercel.
+- Melhorar observabilidade do backend com logs estruturados sem dados sensiveis. Implementado.
+- Criar checklist automatizado de pos-deploy para Render, Neon e Vercel. Implementado.
 
 ### Painel Administrativo
 
@@ -843,7 +847,7 @@ Regras obrigatorias:
 
 ### Prioridade Media
 
-- Integrar provedor externo de IA atras de service/provider isolado, mantendo `AI_PROVIDER=rules` como fallback.
+- Integrar provedor externo de IA atras de service/provider isolado, mantendo `AI_PROVIDER=rules` como fallback. Implementado com OpenAI Responses API.
 - Criar politica de minimizacao de contexto para IA externa, evitando envio de dados brutos quando agregados forem suficientes.
 - Adicionar tela de perfil do usuario com troca de senha.
 - Adicionar recuperacao de senha por email.
@@ -857,7 +861,7 @@ Regras obrigatorias:
 
 ### Prioridade Baixa
 
-- Adicionar temas visuais ou modo escuro.
+- Adicionar temas visuais ou modo escuro. Implementado.
 - Criar relatorios PDF.
 - Adicionar metas financeiras simples.
 - Adicionar transacoes recorrentes.

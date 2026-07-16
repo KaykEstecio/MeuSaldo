@@ -69,3 +69,7 @@ class User(Base):
         back_populates="user",
         cascade="all, delete-orphan",
     )
+    refresh_sessions: Mapped[list["RefreshSession"]] = relationship(
+        back_populates="user",
+        cascade="all, delete-orphan",
+    )
