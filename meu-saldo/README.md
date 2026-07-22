@@ -1,6 +1,6 @@
 # MeuSaldo
 
-MeuSaldo e um sistema web de controle financeiro pessoal com assistente de IA.
+MeuSaldo e um sistema web de controle financeiro pessoal com assistente de IA e importacao segura de extratos CSV/OFX.
 
 ## Stack Definida
 
@@ -22,6 +22,7 @@ meu-saldo/
   frontend/
   docs/
     planejamento.md
+    planejamento-evolucao-pierre-ia.md
   docker-compose.yml
   .gitignore
   README.md
@@ -118,7 +119,7 @@ DATABASE_URL=postgresql+psycopg://postgres:postgres@localhost:5432/meusaldodb
 
 Fase atual concluida: refinamento, seguranca e documentacao do MVP.
 
-Ja existem backend FastAPI completo ate assistente financeiro com fallback por regras, PostgreSQL via Docker, SQLAlchemy, Alembic, autenticacao JWT, CRUDs financeiros, dashboard backend e frontend com React, TypeScript, Vite, TailwindCSS, tela de login, tela de cadastro, dashboard financeiro com cards e graficos e telas de contas, categorias, transacoes, orcamentos e assistente.
+Ja existem backend FastAPI, assistente financeiro com fallback por regras, importacao CSV/OFX com deduplicacao e revisao, PostgreSQL via Docker, SQLAlchemy, Alembic, autenticacao JWT, CRUDs financeiros, dashboard backend e frontend com React, TypeScript, Vite, TailwindCSS e os principais fluxos financeiros.
 
 Ainda nao foi implementada integracao com provedor externo de IA.
 

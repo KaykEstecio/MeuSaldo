@@ -1,12 +1,14 @@
+import uuid
+
 from fastapi import APIRouter, Depends, Query, status
 from sqlalchemy.orm import Session
 
 from app.api.deps import ai_assistant_rate_limit, get_current_user
 from app.database.connection import get_db
 from app.models.user import User
-from app.schemas.ai_assistant import AiAssistantReply, AiMessageCreate, AiMessageRead
+from app.schemas.ai_assistant import AiAssistantReply, AiMessageCreate, AiMessageFeedbackUpdate, AiMessageRead
 from app.schemas.common import ApiResponse, ListResponse, PaginationMeta
-from app.services.ai_assistant_service import create_ai_assistant_reply, list_ai_messages
+from app.services.ai_assistant_service import create_ai_assistant_reply, list_ai_messages, set_ai_message_feedback
 
 
 router = APIRouter(prefix="/ai-assistant", tags=["ai-assistant"])
@@ -38,4 +40,18 @@ def list_messages(
     return ListResponse(
         data=[AiMessageRead.model_validate(message) for message in messages],
         meta=PaginationMeta(page=page, page_size=page_size, total=total),
+    )
+
+
+@router.patch("/messages/{message_id}/feedback", response_model=ApiResponse[AiMessageRead])
+def update_message_feedback(
+    message_id: uuid.UUID,
+    payload: AiMessageFeedbackUpdate,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+) -> ApiResponse[AiMessageRead]:
+    message = set_ai_message_feedback(db, current_user, message_id, payload.feedback)
+    return ApiResponse(
+        data=AiMessageRead.model_validate(message),
+        message="Feedback registrado com sucesso",
     )

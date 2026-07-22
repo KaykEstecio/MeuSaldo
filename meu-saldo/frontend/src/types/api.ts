@@ -104,6 +104,7 @@ export type Transaction = {
   id: string;
   account_id: string;
   category_id: string | null;
+  import_id: string | null;
   type: TransactionType;
   amount: string;
   description: string;
@@ -112,6 +113,47 @@ export type Transaction = {
   deleted_at: string | null;
   created_at: string;
   updated_at: string;
+};
+
+export type TransactionImportPreviewRow = {
+  row_number: number;
+  transaction_date: string;
+  description: string;
+  amount: string;
+  type: TransactionType;
+  suggested_category_id: string | null;
+  confidence: string;
+  suggestion_reason: string;
+  is_duplicate: boolean;
+};
+
+export type TransactionImportPreview = {
+  filename: string;
+  file_format: "csv" | "ofx";
+  total_rows: number;
+  duplicate_count: number;
+  ready_count: number;
+  rows: TransactionImportPreviewRow[];
+};
+
+export type TransactionImport = {
+  id: string;
+  account_id: string;
+  filename: string;
+  file_format: string;
+  status: string;
+  total_rows: number;
+  imported_count: number;
+  duplicate_count: number;
+  skipped_count: number;
+  created_at: string;
+};
+
+export type TransactionImportResult = {
+  import_record: TransactionImport;
+  imported_count: number;
+  duplicate_count: number;
+  skipped_count: number;
 };
 
 export type Budget = {
@@ -135,6 +177,7 @@ export type AiMessage = {
   role: "user" | "assistant";
   content: string;
   source: "user" | "rules" | "external";
+  feedback: "helpful" | "not_helpful" | null;
   created_at: string;
 };
 
@@ -142,8 +185,27 @@ export type AiAssistantReply = {
   answer: string;
   source: "rules" | "external";
   disclaimer: string;
+  fallback_reason: string | null;
+  suggestions: string[];
+  analysis_period: AiAnalysisPeriod;
+  insights: AiInsight[];
   user_message: AiMessage;
   assistant_message: AiMessage;
+};
+
+export type AiAnalysisPeriod = {
+  label: string;
+  start_date: string;
+  end_date: string;
+};
+
+export type AiInsight = {
+  key: string;
+  label: string;
+  value: string;
+  description: string;
+  tone: "neutral" | "positive" | "warning" | "negative";
+  href: string;
 };
 
 export type AdminMetrics = {

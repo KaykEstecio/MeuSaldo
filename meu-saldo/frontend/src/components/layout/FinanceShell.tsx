@@ -19,6 +19,7 @@ const navigationItems = [
   { label: "Contas financeiras", to: ROUTES.accounts },
   { label: "Categorias", to: ROUTES.categories },
   { label: "Movimentacoes", to: ROUTES.transactions },
+  { label: "Importar extrato", to: ROUTES.transactionImports },
   { label: "Limites de gastos", to: ROUTES.budgets },
   { label: "Assistente financeiro", to: ROUTES.aiAssistant },
 ];

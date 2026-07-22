@@ -30,6 +30,9 @@ const CategoriesPage = lazy(() =>
 const TransactionsPage = lazy(() =>
   import("./features/finance/TransactionsPage").then((module) => ({ default: module.TransactionsPage })),
 );
+const TransactionImportsPage = lazy(() =>
+  import("./features/finance/TransactionImportsPage").then((module) => ({ default: module.TransactionImportsPage })),
+);
 const SetupStatusPage = lazy(() =>
   import("./features/setup/SetupStatusPage").then((module) => ({ default: module.SetupStatusPage })),
 );
@@ -58,6 +61,7 @@ export function App() {
             <Route path={ROUTES.accounts} element={<AccountsPage />} />
             <Route path={ROUTES.categories} element={<CategoriesPage />} />
             <Route path={ROUTES.transactions} element={<TransactionsPage />} />
+            <Route path={ROUTES.transactionImports} element={<TransactionImportsPage />} />
             <Route path={ROUTES.budgets} element={<BudgetsPage />} />
             <Route path={ROUTES.aiAssistant} element={<AiAssistantPage />} />
           </Route>

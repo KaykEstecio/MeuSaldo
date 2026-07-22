@@ -22,6 +22,8 @@ class Settings(BaseSettings):
     openai_api_key: str = ""
     ai_model: str = ""
     ai_timeout_seconds: int = 20
+    ai_context_messages: int = 6
+    ai_monthly_token_budget: int = 0
     rate_limit_auth_requests: int = 10
     rate_limit_auth_window_seconds: int = 60
     rate_limit_ai_requests: int = 20

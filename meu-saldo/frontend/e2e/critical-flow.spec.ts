@@ -47,6 +47,23 @@ test("cadastro ate assistente financeiro", async ({ page, request }) => {
   await page.getByRole("button", { name: "Criar limite de gasto" }).click();
   await expect(page.getByRole("cell", { name: "Mercado E2E", exact: true })).toBeVisible();
 
+  await page.getByRole("link", { name: "Importar extrato" }).click();
+  await expect(page.getByRole("heading", { name: "Importar extrato", level: 1 })).toBeVisible();
+  await page.getByLabel("Conta de destino").selectOption({ label: "Conta E2E" });
+  await page.getByLabel("Arquivo CSV ou OFX").setInputFiles({
+    name: "extrato-e2e.csv",
+    mimeType: "text/csv",
+    buffer: Buffer.from(
+      "data;descricao;valor\n22/07/2026;Mercado E2E;-75,00\n22/07/2026;Mercado E2E;-75,00\n",
+    ),
+  });
+  await page.getByRole("button", { name: "Analisar arquivo" }).click();
+  await expect(page.getByText("Duplicada")).toBeVisible();
+  await expect(page.getByRole("button", { name: "Confirmar importacao" })).toBeEnabled();
+  await page.getByRole("button", { name: "Confirmar importacao" }).click();
+  await expect(page.getByText(/1 movimentacao\(oes\) importada/)).toBeVisible();
+  await expect(page.getByRole("cell", { name: "extrato-e2e.csv" })).toBeVisible();
+
   await page.getByRole("link", { name: "Inicio" }).click();
   await expect(page.getByRole("heading", { name: "Inicio", level: 1 })).toBeVisible();
   await expect(page.getByText("Despesas do mes")).toBeVisible();
@@ -54,11 +71,19 @@ test("cadastro ate assistente financeiro", async ({ page, request }) => {
   await page.reload();
   await expect(page.getByRole("heading", { name: "Inicio" })).toBeVisible();
 
-  await page.getByRole("link", { name: "Assistente financeiro" }).click();
+  await page.getByRole("button", { name: "Analisar este mes" }).click();
   await expect(page.getByRole("heading", { name: "Assistente financeiro", level: 1 })).toBeVisible();
+  await expect(page.getByLabel("Pergunta para o assistente")).toHaveValue(
+    "Resuma meu mes e destaque o maior gasto.",
+  );
   await page.getByLabel("Pergunta para o assistente").fill("Como posso reduzir meus gastos?");
   await page.getByRole("button", { name: "Enviar" }).click();
   await expect(page.getByText(/nao executo alteracoes/i)).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Numeros usados nesta analise" })).toBeVisible();
+  await expect(page.getByRole("link", { name: /Despesas/ })).toBeVisible();
+  await expect(page.getByText("Modo seguro por regras").last()).toBeVisible();
+  await page.getByRole("button", { name: "Resposta util" }).last().click();
+  await expect(page.getByRole("button", { name: "Resposta util" }).last()).toHaveAttribute("aria-pressed", "true");
 
   await page.getByRole("button", { name: "Sair" }).click();
   await expect(page).toHaveURL(/\/login$/);

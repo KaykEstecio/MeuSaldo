@@ -6,6 +6,7 @@ export const ROUTES = {
   accounts: "/accounts",
   categories: "/categories",
   transactions: "/transactions",
+  transactionImports: "/transaction-imports",
   budgets: "/budgets",
   aiAssistant: "/ai-assistant",
   admin: "/admin",

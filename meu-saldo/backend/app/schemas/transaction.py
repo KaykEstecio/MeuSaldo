@@ -31,6 +31,7 @@ class TransactionRead(BaseModel):
     id: uuid.UUID
     account_id: uuid.UUID
     category_id: uuid.UUID | None
+    import_id: uuid.UUID | None
     type: str
     amount: Decimal
     description: str

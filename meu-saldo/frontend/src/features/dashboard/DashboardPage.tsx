@@ -6,6 +6,7 @@ import {
   Loader2,
   ReceiptText,
   RefreshCw,
+  Sparkles,
   WalletCards,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
@@ -314,6 +315,42 @@ export function DashboardPage() {
         {error ? (
           <div className="mt-6 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">{error}</div>
         ) : null}
+
+        <section className="mt-6 overflow-hidden rounded-lg border border-brand-200 bg-gradient-to-r from-brand-50 to-white p-5 shadow-sm dark:from-slate-900 dark:to-slate-900">
+          <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+            <div className="flex gap-3">
+              <span className="flex size-11 shrink-0 items-center justify-center rounded-lg bg-brand-600 text-white">
+                <Sparkles size={22} aria-hidden="true" />
+              </span>
+              <div>
+                <h3 className="text-lg font-semibold text-ink-900">Pergunte ao MeuSaldo</h3>
+                <p className="mt-1 max-w-2xl text-sm leading-6 text-ink-600">
+                  Receba uma leitura explicada dos seus numeros e confira os dados usados em cada resposta.
+                </p>
+              </div>
+            </div>
+            <div className="flex flex-col gap-2 sm:flex-row">
+              <button
+                type="button"
+                className="rounded-lg border border-brand-200 bg-white px-4 py-2 text-sm font-semibold text-brand-700 transition hover:bg-brand-50"
+                onClick={() => navigate(`${ROUTES.aiAssistant}?prompt=${encodeURIComponent("Resuma minha semana.")}`)}
+              >
+                Resumir minha semana
+              </button>
+              <button
+                type="button"
+                className="rounded-lg bg-brand-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-brand-700"
+                onClick={() =>
+                  navigate(
+                    `${ROUTES.aiAssistant}?prompt=${encodeURIComponent("Resuma meu mes e destaque o maior gasto.")}`,
+                  )
+                }
+              >
+                Analisar este mes
+              </button>
+            </div>
+          </div>
+        </section>
 
         {isDashboardEmpty ? (
           <section className="mt-6 rounded-lg border border-brand-100 bg-brand-50 p-5">

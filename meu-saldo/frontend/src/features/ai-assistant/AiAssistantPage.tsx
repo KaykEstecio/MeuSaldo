@@ -1,19 +1,38 @@
 import { FormEvent, useEffect, useMemo, useState } from "react";
-import { Bot, Loader2, Send, Sparkles, UserRound } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import {
+  ArrowRight,
+  Bot,
+  BrainCircuit,
+  CalendarRange,
+  Loader2,
+  Send,
+  ShieldCheck,
+  Sparkles,
+  ThumbsDown,
+  ThumbsUp,
+  UserRound,
+} from "lucide-react";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 
 import { ApiError } from "../../api/client";
-import { createAiMessage, listAiMessages } from "../../api/endpoints";
+import { createAiMessage, listAiMessages, updateAiMessageFeedback } from "../../api/endpoints";
 import { FinanceShell } from "../../components/layout/FinanceShell";
 import { useAuthToken } from "../../hooks/useAuthToken";
 import { ROUTES } from "../../lib/routes";
-import type { AiMessage } from "../../types/api";
+import type { AiAnalysisPeriod, AiInsight, AiMessage } from "../../types/api";
 
 const suggestionPrompts = [
-  "Como posso economizar este mes?",
-  "Analise meus limites de gastos.",
-  "Qual categoria merece mais atencao?",
+  "Resuma minha semana.",
+  "Resuma meu mes e destaque o maior gasto.",
+  "Como posso melhorar meu resultado neste mes?",
 ];
+
+const insightToneClasses = {
+  neutral: "border-slate-200 bg-slate-50 text-ink-900",
+  positive: "border-emerald-200 bg-emerald-50 text-emerald-900",
+  warning: "border-amber-200 bg-amber-50 text-amber-900",
+  negative: "border-red-200 bg-red-50 text-red-900",
+};
 
 function getErrorMessage(error: unknown, fallback: string) {
   return error instanceof ApiError ? error.message : fallback;
@@ -22,8 +41,12 @@ function getErrorMessage(error: unknown, fallback: string) {
 export function AiAssistantPage() {
   const { clearToken } = useAuthToken();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const [messages, setMessages] = useState<AiMessage[]>([]);
-  const [prompt, setPrompt] = useState("");
+  const [prompt, setPrompt] = useState(() => (searchParams.get("prompt") ?? "").slice(0, 1000));
+  const [suggestions, setSuggestions] = useState(suggestionPrompts);
+  const [analysisPeriod, setAnalysisPeriod] = useState<AiAnalysisPeriod | null>(null);
+  const [insights, setInsights] = useState<AiInsight[]>([]);
   const [disclaimer, setDisclaimer] = useState("");
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -71,6 +94,9 @@ export function AiAssistantPage() {
     try {
       const response = await createAiMessage({ message: trimmedMessage });
       setDisclaimer(response.data.disclaimer);
+      setSuggestions(response.data.suggestions);
+      setAnalysisPeriod(response.data.analysis_period);
+      setInsights(response.data.insights);
       setMessages((current) => [response.data.assistant_message, response.data.user_message, ...current]);
       setPrompt("");
     } catch (caughtError) {
@@ -83,6 +109,18 @@ export function AiAssistantPage() {
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     void submitPrompt(prompt);
+  }
+
+  async function submitFeedback(messageId: string, feedback: "helpful" | "not_helpful") {
+    setError("");
+    try {
+      const response = await updateAiMessageFeedback(messageId, feedback);
+      setMessages((current) =>
+        current.map((message) => (message.id === messageId ? response.data : message)),
+      );
+    } catch (caughtError) {
+      handleError(caughtError, "Nao conseguimos registrar sua avaliacao agora.");
+    }
   }
 
   return (
@@ -101,7 +139,7 @@ export function AiAssistantPage() {
           </p>
 
           <div className="mt-5 space-y-2">
-            {suggestionPrompts.map((suggestion) => (
+            {suggestions.map((suggestion) => (
               <button
                 key={suggestion}
                 type="button"
@@ -131,6 +169,36 @@ export function AiAssistantPage() {
             <div className="mt-4 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-ink-600">
               {disclaimer}
             </div>
+          ) : null}
+
+          {analysisPeriod && insights.length > 0 ? (
+            <section className="mt-4" aria-labelledby="analysis-summary-title">
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <h3 id="analysis-summary-title" className="text-sm font-semibold text-ink-900">
+                  Numeros usados nesta analise
+                </h3>
+                <span className="inline-flex items-center gap-1.5 rounded-full bg-brand-50 px-3 py-1 text-xs font-semibold text-brand-700">
+                  <CalendarRange size={14} aria-hidden="true" />
+                  {analysisPeriod.label}
+                </span>
+              </div>
+              <div className="mt-3 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+                {insights.map((insight) => (
+                  <Link
+                    key={insight.key}
+                    className={`group rounded-lg border p-3 transition hover:-translate-y-0.5 hover:shadow-sm ${insightToneClasses[insight.tone]}`}
+                    to={insight.href}
+                  >
+                    <div className="flex items-start justify-between gap-2">
+                      <p className="text-xs font-semibold uppercase tracking-wide opacity-70">{insight.label}</p>
+                      <ArrowRight size={15} className="shrink-0 opacity-60 transition group-hover:translate-x-0.5" aria-hidden="true" />
+                    </div>
+                    <p className="mt-2 text-lg font-semibold">{insight.value}</p>
+                    <p className="mt-1 text-xs leading-5 opacity-75">{insight.description}</p>
+                  </Link>
+                ))}
+              </div>
+            </section>
           ) : null}
 
           <div className="mt-5 min-h-[360px] space-y-3 rounded-lg border border-slate-200 bg-slate-50 p-4">
@@ -171,7 +239,42 @@ export function AiAssistantPage() {
                       }`}
                     >
                       <p>{message.content}</p>
-                      {isAssistant ? <p className="mt-2 text-xs text-ink-400">Resposta gerada pelo MeuSaldo</p> : null}
+                      {isAssistant ? (
+                        <div className="mt-3 flex flex-wrap items-center justify-between gap-3 border-t border-slate-100 pt-2">
+                          <span className="inline-flex items-center gap-1.5 text-xs font-medium text-ink-500">
+                            {message.source === "external" ? (
+                              <BrainCircuit size={14} aria-hidden="true" />
+                            ) : (
+                              <ShieldCheck size={14} aria-hidden="true" />
+                            )}
+                            {message.source === "external" ? "Gerada pela IA" : "Modo seguro por regras"}
+                          </span>
+                          <div className="flex items-center gap-1" aria-label="Avaliar resposta">
+                            <button
+                              type="button"
+                              className={`rounded-md p-1.5 transition hover:bg-slate-100 ${
+                                message.feedback === "helpful" ? "bg-brand-50 text-brand-700" : "text-ink-400"
+                              }`}
+                              aria-label="Resposta util"
+                              aria-pressed={message.feedback === "helpful"}
+                              onClick={() => void submitFeedback(message.id, "helpful")}
+                            >
+                              <ThumbsUp size={15} aria-hidden="true" />
+                            </button>
+                            <button
+                              type="button"
+                              className={`rounded-md p-1.5 transition hover:bg-slate-100 ${
+                                message.feedback === "not_helpful" ? "bg-red-50 text-red-700" : "text-ink-400"
+                              }`}
+                              aria-label="Resposta nao util"
+                              aria-pressed={message.feedback === "not_helpful"}
+                              onClick={() => void submitFeedback(message.id, "not_helpful")}
+                            >
+                              <ThumbsDown size={15} aria-hidden="true" />
+                            </button>
+                          </div>
+                        </div>
+                      ) : null}
                     </div>
                   </article>
                 );

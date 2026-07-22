@@ -14,6 +14,9 @@ import type {
   ListResponse,
   TokenResponse,
   Transaction,
+  TransactionImport,
+  TransactionImportPreview,
+  TransactionImportResult,
   TransactionType,
   User,
 } from "../types/api";
@@ -206,6 +209,38 @@ export function deleteTransaction(transactionId: string) {
   });
 }
 
+export function previewTransactionImport(payload: { account_id: string; filename: string; content: string }) {
+  return apiRequest<ApiResponse<TransactionImportPreview>>("/transaction-imports/preview", {
+    method: "POST",
+    body: payload,
+  });
+}
+
+export type TransactionImportConfirmPayload = {
+  account_id: string;
+  filename: string;
+  file_format: "csv" | "ofx";
+  rows: Array<{
+    transaction_date: string;
+    description: string;
+    amount: string;
+    type: TransactionType;
+    category_id: string | null;
+    selected: boolean;
+  }>;
+};
+
+export function confirmTransactionImport(payload: TransactionImportConfirmPayload) {
+  return apiRequest<ApiResponse<TransactionImportResult>>("/transaction-imports/confirm", {
+    method: "POST",
+    body: payload,
+  });
+}
+
+export function listTransactionImports() {
+  return apiRequest<ListResponse<TransactionImport>>("/transaction-imports");
+}
+
 export type BudgetListParams = {
   month?: number;
   year?: number;
@@ -267,5 +302,12 @@ export function createAiMessage(payload: AiAssistantPayload) {
   return apiRequest<ApiResponse<AiAssistantReply>>("/ai-assistant/messages", {
     method: "POST",
     body: payload,
+  });
+}
+
+export function updateAiMessageFeedback(messageId: string, feedback: "helpful" | "not_helpful") {
+  return apiRequest<ApiResponse<AiMessage>>(`/ai-assistant/messages/${messageId}/feedback`, {
+    method: "PATCH",
+    body: { feedback },
   });
 }
